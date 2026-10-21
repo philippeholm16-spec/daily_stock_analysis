@@ -17,7 +17,7 @@ def unwrap(result):
     return data.get("result", data)
 
 
-async def check(query):
+async def check(query, order_book_id=None):
     from fastmcp import Client
     from avanza_mcp import mcp
     async with Client(mcp) as client:
@@ -35,7 +35,7 @@ async def check(query):
         ids = [h.get("order_book_id") for h in hits
                if h.get("order_book_id") and h.get("isin")
                and h.get("currency") == "SEK"]
-        if len(ids) != 1:
+        if order_book_id is not None:\n            if order_book_id not in [h.get("order_book_id") for h in hits]:\n                raise ValueError("Selected Avanza ID not present in search results")\n            ids = [order_book_id]\n        if len(ids) != 1:
             print("AMBIGUOUS: Select an exact verified order-book ID from the candidates.")
             return
         quote = unwrap(await client.call_tool("get_stock_quote", {
@@ -48,8 +48,8 @@ async def check(query):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--query", default="Volvo B")
-    args = parser.parse_args()
-    asyncio.run(check(args.query))
+    parser.add_argument("--order-book-id", default=None)\n    args = parser.parse_args()
+    asyncio.run(check(args.query, args.order_book_id))
 
 
 if __name__ == "__main__":
