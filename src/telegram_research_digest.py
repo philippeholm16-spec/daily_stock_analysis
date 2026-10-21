@@ -44,9 +44,11 @@ def format_research_digest(review, *, generated_at=None):
         "Nyheter används BARA för att hitta aktier. Pressens köp-/säljråd "
         "styr INTE Stock Analysts bedömning.\n"
         "PRELIMINÄR RESEARCH, INTE KÖPREKOMMENDATION ELLER HANDELSSIGNAL. Kurser kan vara fördröjda.\n"
+        f"Telegramlarm: bevakningspoäng strikt över {review.get('alert_threshold_exclusive', 6):g}/10. "
+        "Detta är nyhetsupptäcktsprioritet, inte köpstyrka.\n"
     )
     if not rows:
-        return heading + "\nInga aktier klarade granskningen i denna körning."
+        return heading + "\nInga granskade aktier över bevakningströskeln i denna körning."
     parts = [heading]
     for index, row in enumerate(rows[:8], start=1):
         a = row["stock_analyst"]
@@ -60,7 +62,8 @@ def format_research_digest(review, *, generated_at=None):
         risks = "; ".join(_short(x, width=115) for x in a.get("risks", [])[:1]) or "Ingen specifik riskinformation"
         item = (
             f"\n{index}. {_short(row['ticker'], width=20)} "
-            f"| Stock Analyst: {score}\n"
+            f"| Bevakningspoäng {row['discovery_priority']:.0f}/10\n"
+            f"Stock Analysts egna bedömning: {score}\n"
             f"Affärspotential: {_short(a.get('potential_quality', 'Ej bedömbar'), width=55)}\n"
             f"Senaste kurs: {price_text}\n"
             f"{_levels(a)}"
