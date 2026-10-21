@@ -1,0 +1,27 @@
+name: Avanza public quote connectivity (one stock)
+
+on:
+  push:
+    branches:
+      - feature/swedish-market-scanner
+    paths:
+      - '.github/workflows/avanza-one-stock-connectivity.yml'
+      - 'scripts/avanza_first_quote.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  avanza-one-stock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install public read-only Avanza MCP
+        run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
+      - name: Request one public stock quote
+        run: python -m scripts.avanza_first_quote --query 'Volvo B'
