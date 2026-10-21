@@ -123,9 +123,9 @@ def review_research_report(report, *, now=None, max_report_age_seconds=900,
         host = urlsplit(url).hostname if isinstance(url, str) else None
         if not isinstance(url, str) or urlsplit(url).scheme != "https" or host not in TRUSTED_ARTICLE_DOMAINS:
             reasons.append("unapproved_article_source")
-        score = row.get("research_score")
+        score = row.get("discovery_priority")
         if isinstance(score, bool) or not isinstance(score, (int, float)) or not isfinite(score) or not 0 <= score <= 10:
-            reasons.append("invalid_research_score")
+            reasons.append("invalid_discovery_priority")
         if (not isinstance(row.get("source"), str) or not row["source"].strip()):
             reasons.append("unknown_source")
         reasons.extend(_check_independent_analyst(row, capital_sek=capital))
