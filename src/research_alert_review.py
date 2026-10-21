@@ -55,6 +55,26 @@ def _check_independent_analyst(row, *, capital_sek):
     if not isinstance(output.get("why"), list) or not isinstance(output.get("risks"), list):
         reasons.append("missing_analyst_reason_and_risk")
     if status == "ANALYZED_INDICATIVE_SETUP":
+        grade = output.get("opportunity_grade")
+        if grade not in ("VERY_GOOD", "WATCH_ONLY"):
+            reasons.append("unknown_analyst_opportunity_grade")
+        if grade == "VERY_GOOD":
+            # Independent validation of the claimed 'very good' status.
+            # A strong trend alone never suffices without a documented
+            # target, confirmed repeated resistance and liquidity evidence.
+            ratio = output.get("relative_volume_vs_prior20")
+            touches = output.get("resistance_touches")
+            spread = row.get("spread_pct")
+            chart_time = output.get("chart_as_of")
+            entry_quote = row.get("last_price")
+            if (not isinstance(score, (float, int)) or score < 85
+                    or not _positive(ratio) or ratio < 1.5
+                    or not isinstance(touches, int) or touches < 2
+                    or not isinstance(spread, (int, float)) or isinstance(spread, bool)
+                    or not isfinite(spread) or not 0 <= spread <= 0.25
+                    or not _fresh_timestamp(chart_time, datetime.now(timezone.utc), 86400)
+                    or not _positive(entry_quote)):
+                reasons.append("very_good_claim_not_supported")
         entry, stop, target = (
             output.get("entry_price"), output.get("lowest_sell_point"),
             output.get("sell_point")
@@ -75,7 +95,14 @@ def _check_independent_analyst(row, *, capital_sek):
                 or output["quantity"] < 1
                 or output.get("levels_status") != "ENDAST_PRELIMINÄRT_SCENARIO"):
             reasons.append("risk_or_price_level_not_approved")
+        if grade == "VERY_GOOD":
+            if not _positive(output.get("potential_pct")) or output["potential_pct"] < 3.0:
+                reasons.append("very_good_requires_at_least_three_percent_upside")
+            if _positive(entry_quote) and _positive(entry) and abs(entry_quote / entry - 1) > 0.02:
+                reasons.append("quoted_entry_mismatch")
     elif status in ("ANALYSIS_UNAVAILABLE", "ANALYZED_NO_VALID_SETUP"):
+        if output.get("opportunity_grade") == "VERY_GOOD":
+            reasons.append("very_good_requires_valid_setup")
         if any(output.get(field) is not None for field in
                ("entry_price", "lowest_sell_point", "sell_point", "potential_pct")):
             reasons.append("invented_levels_on_unapproved_analysis")
