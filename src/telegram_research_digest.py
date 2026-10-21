@@ -61,6 +61,7 @@ def format_research_digest(review, *, generated_at=None):
         item = (
             f"\n{index}. {_short(row['ticker'], width=20)} "
             f"| Stock Analyst: {score}\n"
+            f"Affärspotential: {_short(a.get('potential_quality', 'Ej bedömbar'), width=55)}\n"
             f"Senaste kurs: {price_text}\n"
             f"{_levels(a)}"
             f"VARFÖR: {reasons}\n"
