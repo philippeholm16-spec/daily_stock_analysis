@@ -23,4 +23,11 @@ jobs:
       - name: Install read-only public quote client
         run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
       - name: Run public RSS and stock identity research, no trades
-        run: python -m scripts.news_avanza_research_probe
+        run: python -m scripts.news_avanza_research_probe --output news_research_report.json
+      - name: Store data-only research report
+        uses: actions/upload-artifact@v4
+        with:
+          name: stockholm-news-research
+          path: news_research_report.json
+          retention-days: 3
+          if-no-files-found: error
