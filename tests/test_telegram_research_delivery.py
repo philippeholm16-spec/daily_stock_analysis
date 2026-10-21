@@ -1,11 +1,9 @@
-"""Tests for native Stock Analyst Telegram research delivery, no network."""
+"""Independent very-good Stock Analyst alerts, no live Telegram requests."""
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
-import io
-import json
 from urllib.parse import parse_qs
-
 import pytest
-from src.research_alert_review import review_research_report
+
 from scripts.telegram_research_delivery import build_approved_digest, send_via_telegram
 
 
@@ -14,28 +12,36 @@ NOW = datetime.now(timezone.utc)
 
 def report():
     return {
-        "trade_signals_enabled": False, "actionable_count": 0,
-        "fetched_at_utc": NOW.isoformat(), "capital_sek": 15000,
+        "trade_signals_enabled": False,
+        "actionable_count": 0,
+        "fetched_at_utc": NOW.isoformat(),
+        "capital_sek": 15000,
         "research_candidates": [{
             "isin": "SE0003849223", "ticker": "BULTEN", "mic": "XSTO",
             "headline": "Bulten ökar rörelseresultatet", "source": "Placera",
             "published_at": (NOW - timedelta(hours=1)).isoformat(),
             "news_url": "https://www.placera.se/nyheter/bulten",
-            "catalysts": ["report"], "discovery_priority": 7,
-            "last_price": 75.8,
+            "catalysts": ["report"],
+            "discovery_priority": 0,  # press/newspaper score is IRRELEVANT
+            "last_price": 75.8, "spread_pct": 0.12,
             "actionable": False, "trade_signal": None,
             "publisher_isin_confirmed": False, "timestamp_verified": False,
             "stock_analyst": {
                 "engine": "Stock Analyst Sweden / independent technical v1",
                 "status": "ANALYZED_INDICATIVE_SETUP",
-                "score": 84, "quality": "Hög teknisk styrka",
-                "potential_quality": "Hög teknisk affärspotential",
-                "why": ["Stigande kurs jämfört med glidande medelvärde",
-                        "Relativ volym 1,7 gånger"],
-                "risks": ["Historisk kurs är inte realtidsverifierad"],
+                "opportunity_grade": "VERY_GOOD",
+                "score": 90, "quality": "Hög teknisk styrka",
+                "potential_quality": "Mycket god preliminär teknisk potential",
+                "why": ["Stigande kurs jämfört med 20-stapels medelvärde",
+                        "Förhöjd handelsvolym"],
+                "risks": ["Kursdata inte realtidsverifierad"],
                 "entry_price": 75.8, "lowest_sell_point": 74.0,
-                "sell_point": 82.0, "potential_pct": round((82 / 75.8 - 1)*100, 2),
+                "sell_point": 82.0,
+                "potential_pct": round((82 / 75.8 - 1)*100, 2),
                 "net_rr": 3.2, "max_risk_sek": 52, "quantity": 26,
+                "resistance_touches": 3,
+                "relative_volume_vs_prior20": 1.8,
+                "chart_as_of": NOW.isoformat(),
                 "levels_status": "ENDAST_PRELIMINÄRT_SCENARIO",
                 "actionable": False, "data_verified_real_time": False,
                 "source_news_opinion_used": False,
@@ -44,18 +50,80 @@ def report():
     }
 
 
-def test_approved_report_generates_delayed_research_disclaimer():
-    reviewed, digest = build_approved_digest(report())
-    assert reviewed["checked"] == 1 and reviewed["all_checked"]
+def test_very_good_alert_includes_entry_stop_target_potential_and_reasons():
+    review, digest = build_approved_digest(report())
+    assert review["alert_count"] == 1
+    assert "BULTEN" in digest and "90/100" in digest
+    assert "Affärspotential: Mycket god" in digest
+    assert "74.00 kr" in digest and "82.00 kr" in digest
+    assert "8.18 %" in digest and "VARFÖR" in digest
     assert "INTE KÖPREKOMMENDATION" in digest
-    assert "BULTEN" in digest and "75.80" in digest
-    assert "Stop-loss" in digest and "74.00 kr" in digest
-    assert "Målkurs" in digest and "82.00 kr" in digest
-    assert "Potential" in digest and "8.18 %" in digest
-    assert "VARFÖR" in digest
-    assert "84/100" in digest
-    assert "Affärspotential: Hög teknisk affärspotential" in digest
-    assert "Bevakningspoäng 7/10" in digest
+
+
+def test_low_discovery_priority_does_not_block_very_good_stock_analyst():
+    data = report()
+    data["research_candidates"][0]["discovery_priority"] = 0
+    review, digest = build_approved_digest(data)
+    assert review["alert_count"] == 1
+    assert "BULTEN" in digest
+
+
+def test_high_discovery_priority_cannot_force_unapproved_setup():
+    data = report()
+    data["research_candidates"][0]["discovery_priority"] = 10
+    analysis = data["research_candidates"][0]["stock_analyst"]
+    analysis.update({
+        "status": "ANALYZED_NO_VALID_SETUP", "opportunity_grade": "NONE",
+        "lowest_sell_point": None, "sell_point": None,
+        "potential_pct": None, "entry_price": None,
+    })
+    review, digest = build_approved_digest(data)
+    assert review["alert_count"] == 0
+    assert "BULTEN" not in digest
+
+
+def test_score_below_85_cannot_alert():
+    data = report()
+    data["research_candidates"][0]["stock_analyst"]["score"] = 84
+    review, digest = build_approved_digest(data)
+    assert not review["accepted"] and "BULTEN" not in digest
+
+
+def test_lower_opportunity_grade_cannot_alert_even_with_100_score():
+    data = report()
+    a = data["research_candidates"][0]["stock_analyst"]
+    a["score"] = 100
+    a["opportunity_grade"] = "WATCH_ONLY"
+    review, digest = build_approved_digest(data)
+    assert not review["accepted"] and "BULTEN" not in digest
+
+
+def test_no_unreviewed_idea_can_be_sent():
+    data = report()
+    data["research_candidates"][0].pop("stock_analyst")
+    review, digest = build_approved_digest(data)
+    assert review["alert_count"] == 0 and "BULTEN" not in digest
+
+
+def test_newsroom_opinion_never_impacts_stock_analyst_rating():
+    original = report()
+    changed = deepcopy(original)
+    changed["research_candidates"][0]["source"] = "Dagens industri"
+    changed["research_candidates"][0]["headline"] = "Bulten ser dyr ut"
+    changed["research_candidates"][0]["discovery_priority"] = 10
+    x, _ = build_approved_digest(original)
+    y, _ = build_approved_digest(changed)
+    assert x["alert_count"] == y["alert_count"] == 1
+
+
+def test_duplicate_share_class_not_alerted_twice():
+    data = report()
+    copy = deepcopy(data["research_candidates"][0])
+    copy["news_url"] = "https://www.placera.se/nyheter/second"
+    data["research_candidates"].append(copy)
+    approved, _ = build_approved_digest(data)
+    assert approved["reviewed_and_valid"] == 2
+    assert approved["alert_count"] == 1
 
 
 def test_fake_trade_signal_blocks_delivery():
@@ -79,9 +147,9 @@ def test_send_reuses_existing_secrets_but_never_logs_them():
         return Response()
     assert send_via_telegram("RESEARCH ONLY", token="example-token",
                              chat_id="example-chat", opener=opener)
-    req, timeout = captured[0]
-    fields = parse_qs(req.data.decode())
-    assert req.full_url.endswith("/botexample-token/sendMessage")
+    request, timeout = captured[0]
+    fields = parse_qs(request.data.decode())
+    assert request.full_url.endswith("/botexample-token/sendMessage")
     assert fields["chat_id"] == ["example-chat"]
     assert fields["text"] == ["RESEARCH ONLY"]
     assert timeout == 12
@@ -100,50 +168,3 @@ def test_network_fail_never_exposes_secret():
         send_via_telegram("test", token="super_secret_abc", chat_id="x",
                           opener=failure)
     assert "super_secret_abc" not in str(error.value)
-
-def test_independent_stock_analyst_score_not_press_priority():
-    data = report()
-    data["research_candidates"][0]["discovery_priority"] = 0
-    _, digest = build_approved_digest(data)
-    assert "84/100" not in digest
-    assert "BULTEN" not in digest
-
-
-def test_missing_analysis_yields_no_telegram_tip():
-    data = report()
-    data["research_candidates"][0].pop("stock_analyst")
-    reviewed, digest = build_approved_digest(data)
-    assert not reviewed["accepted"]
-    assert "BULTEN" not in digest
-
-
-def test_score_equal_to_six_produces_no_alert():
-    data = report()
-    data["research_candidates"][0]["discovery_priority"] = 6
-    reviewed, digest = build_approved_digest(data)
-    assert reviewed["checked"] == 1
-    assert reviewed["reviewed_and_valid"] == 1
-    assert reviewed["alert_count"] == 0
-    assert "BULTEN" not in digest
-
-
-def test_score_above_six_alerts_despite_no_setup():
-    data = report()
-    data["research_candidates"][0]["discovery_priority"] = 7
-    a = data["research_candidates"][0]["stock_analyst"]
-    a["status"] = "ANALYZED_NO_VALID_SETUP"
-    for key in ("entry_price", "lowest_sell_point", "sell_point", "potential_pct"):
-        a[key] = None
-    reviewed, digest = build_approved_digest(data)
-    assert reviewed["alert_count"] == 1
-    assert "Ej fastställd" in digest
-    assert "Stock Analysts egna bedömning" in digest
-
-
-def test_threshold_rejects_nonreviewed_high_score():
-    data = report()
-    data["research_candidates"][0]["discovery_priority"] = 9
-    data["research_candidates"][0].pop("stock_analyst")
-    reviewed, digest = build_approved_digest(data)
-    assert reviewed["alert_count"] == 0
-    assert "BULTEN" not in digest
