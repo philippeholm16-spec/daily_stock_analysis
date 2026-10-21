@@ -1,0 +1,25 @@
+name: Stock Analyst Bulten one-week historical research
+on:
+  push:
+    branches: [feature/swedish-market-scanner]
+    paths:
+      - 'scripts/stockholm_backtest_probe.py'
+      - '.github/workflows/stockholm-backtest-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-historical-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install unofficial read-only public Avanza provider
+        run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
+      - name: Run historical walk-forward research without future leakage
+        run: python -m scripts.stockholm_backtest_probe
