@@ -15,7 +15,7 @@ NOW = datetime.now(timezone.utc)
 def report():
     return {
         "trade_signals_enabled": False, "actionable_count": 0,
-        "fetched_at_utc": NOW.isoformat(),
+        "fetched_at_utc": NOW.isoformat(), "capital_sek": 15000,
         "research_candidates": [{
             "isin": "SE0003849223", "ticker": "BULTEN", "mic": "XSTO",
             "headline": "Bulten ökar rörelseresultatet", "source": "Placera",
@@ -25,6 +25,20 @@ def report():
             "last_price": 75.8,
             "actionable": False, "trade_signal": None,
             "publisher_isin_confirmed": False, "timestamp_verified": False,
+            "stock_analyst": {
+                "engine": "Stock Analyst Sweden / independent technical v1",
+                "status": "ANALYZED_INDICATIVE_SETUP",
+                "score": 84, "quality": "Hög teknisk styrka",
+                "why": ["Stigande kurs jämfört med glidande medelvärde",
+                        "Relativ volym 1,7 gånger"],
+                "risks": ["Historisk kurs är inte realtidsverifierad"],
+                "entry_price": 75.8, "lowest_sell_point": 74.0,
+                "sell_point": 82.0, "potential_pct": round((82 / 75.8 - 1)*100, 2),
+                "net_rr": 3.2, "max_risk_sek": 52, "quantity": 26,
+                "levels_status": "ENDAST_PRELIMINÄRT_SCENARIO",
+                "actionable": False, "data_verified_real_time": False,
+                "source_news_opinion_used": False,
+            },
         }],
     }
 
@@ -34,6 +48,12 @@ def test_approved_report_generates_delayed_research_disclaimer():
     assert reviewed["checked"] == 1 and reviewed["all_checked"]
     assert "INTE KÖPREKOMMENDATION" in digest
     assert "BULTEN" in digest and "75.80" in digest
+    assert "Stop-loss" in digest and "74.00 kr" in digest
+    assert "Målkurs" in digest and "82.00 kr" in digest
+    assert "Potential" in digest and "8.18 %" in digest
+    assert "VARFÖR" in digest
+    assert "84/100" in digest
+    assert "bevakningspoäng" not in digest
 
 
 def test_fake_trade_signal_blocks_delivery():
@@ -78,3 +98,18 @@ def test_network_fail_never_exposes_secret():
         send_via_telegram("test", token="super_secret_abc", chat_id="x",
                           opener=failure)
     assert "super_secret_abc" not in str(error.value)
+
+def test_independent_stock_analyst_score_not_press_priority():
+    data = report()
+    data["research_candidates"][0]["research_score"] = 0
+    _, digest = build_approved_digest(data)
+    assert "84/100" in digest
+    assert "0/10" not in digest
+
+
+def test_missing_analysis_yields_no_telegram_tip():
+    data = report()
+    data["research_candidates"][0].pop("stock_analyst")
+    reviewed, digest = build_approved_digest(data)
+    assert not reviewed["accepted"]
+    assert "BULTEN" not in digest
