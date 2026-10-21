@@ -34,7 +34,7 @@ def test_cash_gate_accounts_for_entry_costs():
 
 def test_commission_reduces_affordable_quantity():
     d = evaluate(candidate(entry=1000, last_price=1000,
-                           stop=999, target=1006),
+                           stop=999, target=1025),
                  capital_sek=10_000, commission_sek_per_side=25,
                  now=NOW)
     assert d.eligible
@@ -54,3 +54,11 @@ def test_never_exceeds_one_percent_across_capital_range():
         assert d.eligible
         assert d.risk_sek <= capital * 0.01
         assert d.quantity * (240 + 0.1 + 0.2) + 7 <= capital
+
+def test_high_commission_can_disqualify_reward_to_risk():
+    d = evaluate(candidate(entry=1000, last_price=1000,
+                           stop=999, target=1006),
+                 capital_sek=10_000, commission_sek_per_side=25,
+                 now=NOW)
+    assert not d.eligible
+    assert "reward_to_risk_below_two" in d.reasons
