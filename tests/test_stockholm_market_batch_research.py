@@ -81,6 +81,8 @@ def test_scanner_is_bounded_and_does_not_trust_missing_charts():
     plan = BatchPlan("sample", True, 0, 1, 1, 1, (STOCK,))
     async def immediate(_): pass
     result = asyncio.run(scan_batch(plan, fake_provider, now=NOW, sleep=immediate))
-    assert result["stocks_rejected"] == 1
+    assert result["stocks_rejected"] == 0
+    assert result["stocks_reviewed_or_explicitly_unavailable"] == 1
+    assert result["results"][0]["stock_analyst"]["status"] == "ANALYSIS_UNAVAILABLE"
     assert result["very_good_indicative_setups"] == 0
     assert all(row["actionable"] is False for row in result["results"])
