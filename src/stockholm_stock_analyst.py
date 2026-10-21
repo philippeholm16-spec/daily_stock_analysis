@@ -12,6 +12,7 @@ from math import isfinite
 from statistics import mean
 
 from src.swedish_market_scanner import Candidate, evaluate
+from src.technical_price_levels import derive_levels
 
 
 def _positive(value):
@@ -73,6 +74,7 @@ def _decline(reason):
         "status": "ANALYSIS_UNAVAILABLE",
         "score": None, "quality": "Kan inte bedömas",
         "potential_quality": "Ej bedömbar",
+        "opportunity_grade": "NONE",
         "why": [], "risks": [reason],
         "lowest_sell_point": None, "sell_point": None,
         "potential_pct": None, "entry_price": None,
@@ -118,15 +120,13 @@ def analyze_xsto_candidate(candidate, raw_chart, *, now=None,
     mom5 = (close / bars[-6]["close"] - 1) * 100
     old20vol = mean(b["volume"] for b in bars[-21:-1])
     rvol = bars[-1]["volume"] / old20vol if old20vol > 0 else None
-    true_ranges = []
-    for i in range(len(bars) - 14, len(bars)):
-        b, prior = bars[i], bars[i-1]
-        true_ranges.append(max(b["high"] - b["low"],
-                               abs(b["high"] - prior["close"]),
-                               abs(b["low"] - prior["close"])))
-    atr = mean(true_ranges)
-    previous_high = max(b["high"] for b in bars[-21:-1])
-    low5 = min(b["low"] for b in last5)
+    try:
+        levels = derive_levels(bars, entry=price)
+    except ValueError as exc:
+        return _decline("Prisnivåer kan inte beräknas: " + str(exc))
+    atr = levels.atr14
+    stop = levels.stop
+    target = levels.target
 
     # Evidence-backed *research* rating; no opinion scoring or news score.
     reasons, risks = [], []
@@ -168,20 +168,19 @@ def analyze_xsto_candidate(candidate, raw_chart, *, now=None,
                "Måttlig teknisk styrka" if score >= 50 else "Svag teknisk styrka")
 
     # Observed historical resistance only, never assume a bullish target.
-    stop = low5 - 0.15 * atr
-    if stop <= 0 or stop >= price or previous_high <= price:
+    if stop <= 0 or stop >= price or target is None or target <= price:
         return {
             **_decline("Ingen prisnivå med observerat stöd/motstånd och giltig riskprofil."),
             "status": "ANALYZED_NO_VALID_SETUP", "score": score,
             "potential_quality": "Ingen godkänd affärspotential just nu",
             "quality": quality, "why": reasons,
-            "risks": risks + ["Ingen evidensbaserad köp-/säljplan kan fastställas."],
+            "risks": risks + ["Ingen evidensbaserad köp-/säljplan kan fastställas: "
+                              + levels.target_reason],
             "bar_resolution": resolution,
             "momentum_5_bars_pct": round(mom5, 2),
             "relative_volume_vs_prior20": round(rvol, 2) if rvol is not None else None,
             "source_news_opinion_used": False,
         }
-    target = previous_high
     try:
         decision = evaluate(
             Candidate(
@@ -203,6 +202,7 @@ def analyze_xsto_candidate(candidate, raw_chart, *, now=None,
         return {
             **_decline("Indikativ teknisk plan underkänd: " + ", ".join(decision.reasons)),
             "status": "ANALYZED_NO_VALID_SETUP", "score": score,
+            "potential_quality": "Ingen godkänd affärspotential just nu",
             "quality": quality, "why": reasons,
             "risks": risks + ["Risk/reward, prisnivåer eller 1 %-risk uppfylls inte."],
             "bar_resolution": resolution,
@@ -210,19 +210,36 @@ def analyze_xsto_candidate(candidate, raw_chart, *, now=None,
             "relative_volume_vs_prior20": round(rvol, 2) if rvol is not None else None,
             "source_news_opinion_used": False,
         }
+    potential_pct = 100 * (target / price - 1)
+    bar_age_hours = (now - bars[-1]["at"]).total_seconds() / 3600
+    very_good = (
+        score >= 85
+        and rvol is not None and rvol >= 1.5
+        and isinstance(spread_pct, (float, int)) and not isinstance(spread_pct, bool)
+        and isfinite(spread_pct) and 0 <= spread_pct <= 0.25
+        and decision.reward_to_risk >= 2.0 and potential_pct >= 3.0
+        and levels.resistance_touches >= 2
+        and abs(price / close - 1) <= 0.02
+        and 0 <= bar_age_hours <= 24
+        and resolution != "day"
+    )
     return {
         "engine": "Stock Analyst Sweden / independent technical v1",
         "status": "ANALYZED_INDICATIVE_SETUP",
         "score": score, "quality": quality,
-        "potential_quality": ("Hög teknisk affärspotential" if score >= 75
-                              else "Måttlig teknisk affärspotential" if score >= 50
-                              else "Låg teknisk affärspotential"),
-        "why": reasons + ["Historiskt observerat motstånd ovanför senaste kurs."],
+        "opportunity_grade": "VERY_GOOD" if very_good else "WATCH_ONLY",
+        "potential_quality": ("Mycket god preliminär teknisk potential"
+                              if very_good else "Preliminärt upplägg; inte mycket god potential"),
+        "why": reasons + ["Två eller fler historiska noteringar vid motståndsnivån."],
         "risks": risks + ["Källans realtid och full börstäckning är ännu inte verifierade."],
         "entry_price": round(price, 2),
         "lowest_sell_point": round(stop, 2),  # stop-loss / invalidation
         "sell_point": round(target, 2),  # prior observed resistance
-        "potential_pct": round(100 * (target / price - 1), 2),
+        "potential_pct": round(potential_pct, 2),
+        "resistance_touches": levels.resistance_touches,
+        "atr14": round(atr, 4),
+        "support": round(levels.support, 4),
+        "chart_as_of": bars[-1]["at"].isoformat(),
         "net_rr": round(decision.reward_to_risk, 2),
         "max_risk_sek": round(decision.risk_sek, 2),
         "quantity": decision.quantity,
