@@ -1,0 +1,46 @@
+name: Automatic Swedish news-driven stock research
+on:
+  push:
+    branches: [feature/swedish-market-scanner]
+    paths:
+      - 'src/automatic_news_candidates.py'
+      - 'scripts/auto_news_research_probe.py'
+      - '.github/workflows/auto-news-research.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  automatic-research-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install unofficial read-only Avanza MCP
+        run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
+      - name: Find stocks automatically from news and verify XSTO + quotes
+        run: python -m scripts.auto_news_research_probe --max-queries 10 --output auto_news_research.json
+      - name: Assert all candidates are research-only
+        run: |
+          python - <<'PY'
+          import json
+          doc = json.load(open("auto_news_research.json"))
+          assert doc["actionable_count"] == 0
+          assert doc["trade_signals_enabled"] is False
+          assert all(x["actionable"] is False and x["trade_signal"] is None
+                     and x["publisher_isin_confirmed"] is False
+                     and x["timestamp_verified"] is False
+                     for x in doc["research_candidates"])
+          print("RESEARCH ONLY:", doc["metrics"], "headlines queued", doc["headlines_queued"])
+          PY
+      - name: Save automatic candidate report
+        uses: actions/upload-artifact@v4
+        with:
+          name: automatic-swedish-research
+          path: auto_news_research.json
+          retention-days: 3
+          if-no-files-found: error
