@@ -43,7 +43,7 @@ def format_research_digest(review, *, generated_at=None):
         f"STOCK ANALYST | SVENSK AKTIEBEVAKNING | {stamp}\n"
         "Nyheter används BARA för att hitta aktier. Pressens köp-/säljråd "
         "styr INTE Stock Analysts bedömning.\n"
-        "PRELIMINÄR RESEARCH, INTE HANDELSSIGNAL. Kurser kan vara fördröjda.\n"
+        "PRELIMINÄR RESEARCH, INTE KÖPREKOMMENDATION ELLER HANDELSSIGNAL. Kurser kan vara fördröjda.\n"
     )
     if not rows:
         return heading + "\nInga aktier klarade granskningen i denna körning."
