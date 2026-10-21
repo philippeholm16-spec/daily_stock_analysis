@@ -13,14 +13,16 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from src.research_alert_review import review_research_report
+from src.discovery_watch_alerts import select_watch_alerts
 from src.telegram_research_digest import format_research_digest
 
 
-def build_approved_digest(report):
-    review = review_research_report(report)
-    if not review["all_checked"]:
+def build_approved_digest(report, *, threshold=6):
+    reviewed = review_research_report(report)
+    if not reviewed["all_checked"]:
         raise ValueError("partial_review")
-    return review, format_research_digest(review)
+    alerts = select_watch_alerts(reviewed, min_score_exclusive=threshold)
+    return alerts, format_research_digest(alerts)
 
 
 def send_via_telegram(message, *, token, chat_id, thread_id=None, opener=urlopen):
@@ -54,11 +56,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--send", action="store_true", help="Requires explicit second opt-in")
+    parser.add_argument("--min-discovery-score-exclusive", type=float, default=6)
     args = parser.parse_args()
     report = json.loads(args.report.read_text(encoding="utf-8"))
-    review, digest = build_approved_digest(report)
+    review, digest = build_approved_digest(
+        report, threshold=args.min_discovery_score_exclusive)
     print(json.dumps({
-        "checked": review["checked"], "approved_research": len(review["accepted"]),
+        "checked": review["checked"],
+        "reviewed_and_valid": review["reviewed_and_valid"],
+        "alert_count": review["alert_count"],
+        "below_threshold_count": review["below_threshold_count"],
+        "min_discovery_score_exclusive": review["alert_threshold_exclusive"],
         "rejected": len(review["rejected"]), "mode": "RESEARCH_ONLY",
         "send_requested": args.send,
     }, ensure_ascii=False))
@@ -69,7 +77,7 @@ def main():
     if os.getenv("TELEGRAM_RESEARCH_SEND_ENABLED", "").lower() != "true":
         raise RuntimeError("telegram_send_not_enabled")
     if not review["accepted"]:
-        print("NO_APPROVED_RESEARCH_NOT_SENT")
+        print("NO_REVIEWED_CANDIDATES_ABOVE_THRESHOLD_NOT_SENT")
         return
     send_via_telegram(
         digest,
