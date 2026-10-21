@@ -1,0 +1,52 @@
+name: Swedish research to existing Stock Analyst Telegram bot
+
+on:
+  push:
+    branches: [feature/swedish-market-scanner]
+    paths:
+      - '.github/workflows/stockholm-research-telegram.yml'
+      - 'scripts/telegram_research_delivery.py'
+      - 'src/telegram_research_digest.py'
+      - 'src/research_alert_review.py'
+  workflow_dispatch:
+    inputs:
+      send_telegram:
+        description: 'Send reviewed, research-only news digest to existing Telegram chat?'
+        type: boolean
+        default: false
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  reviewed-research:
+    runs-on: ubuntu-latest
+    environment: STOCK_LIST
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install public Avanza read-only tool
+        run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
+      - name: Discover news candidates from Placera and free Google News RSS
+        run: python -m scripts.auto_news_research_probe --max-queries 10 --output auto_news_research.json
+      - name: Review every proposal and show dry-run digest
+        run: python -m scripts.telegram_research_delivery --report auto_news_research.json
+      - name: Send only when manually opted-in and reviewed
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.send_telegram }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_MESSAGE_THREAD_ID: ${{ secrets.TELEGRAM_MESSAGE_THREAD_ID }}
+          TELEGRAM_RESEARCH_SEND_ENABLED: 'true'
+        run: python -m scripts.telegram_research_delivery --report auto_news_research.json --send
+      - name: Archive audited research report
+        uses: actions/upload-artifact@v4
+        with:
+          name: stockholm-research-reviewed
+          path: auto_news_research.json
+          retention-days: 3
+          if-no-files-found: error
