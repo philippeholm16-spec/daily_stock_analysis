@@ -30,7 +30,7 @@ def _positive(value):
             and isfinite(value) and value > 0)
 
 
-def _check_independent_analyst(row, *, capital_sek):
+def _check_independent_analyst(row, *, capital_sek, now):
     """Audit Stock Analyst results independently of publisher/discovery scores."""
     output = row.get("stock_analyst")
     if not isinstance(output, dict):
@@ -72,7 +72,7 @@ def _check_independent_analyst(row, *, capital_sek):
                     or not isinstance(touches, int) or touches < 2
                     or not isinstance(spread, (int, float)) or isinstance(spread, bool)
                     or not isfinite(spread) or not 0 <= spread <= 0.25
-                    or not _fresh_timestamp(chart_time, datetime.now(timezone.utc), 86400)
+                    or not _fresh_timestamp(chart_time, now, 86400)
                     or not _positive(entry_quote)):
                 reasons.append("very_good_claim_not_supported")
         entry, stop, target = (
@@ -155,7 +155,7 @@ def review_research_report(report, *, now=None, max_report_age_seconds=900,
             reasons.append("invalid_discovery_priority")
         if (not isinstance(row.get("source"), str) or not row["source"].strip()):
             reasons.append("unknown_source")
-        reasons.extend(_check_independent_analyst(row, capital_sek=capital))
+        reasons.extend(_check_independent_analyst(row, capital_sek=capital, now=now))
         key = (isin, url)
         if key in seen:
             reasons.append("duplicate_article")
