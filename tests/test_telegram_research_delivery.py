@@ -21,7 +21,7 @@ def report():
             "headline": "Bulten ökar rörelseresultatet", "source": "Placera",
             "published_at": (NOW - timedelta(hours=1)).isoformat(),
             "news_url": "https://www.placera.se/nyheter/bulten",
-            "catalysts": ["report"], "research_score": 6,
+            "catalysts": ["report"], "discovery_priority": 6,
             "last_price": 75.8,
             "actionable": False, "trade_signal": None,
             "publisher_isin_confirmed": False, "timestamp_verified": False,
@@ -101,7 +101,7 @@ def test_network_fail_never_exposes_secret():
 
 def test_independent_stock_analyst_score_not_press_priority():
     data = report()
-    data["research_candidates"][0]["research_score"] = 0
+    data["research_candidates"][0]["discovery_priority"] = 0
     _, digest = build_approved_digest(data)
     assert "84/100" in digest
     assert "0/10" not in digest
