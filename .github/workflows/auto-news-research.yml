@@ -22,7 +22,7 @@ jobs:
           python-version: '3.12'
       - name: Install unofficial read-only Avanza MCP
         run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
-      - name: Find stocks automatically from news and verify XSTO + quotes
+      - name: Find stocks via news; independently analyze EVERY verified candidate
         run: python -m scripts.auto_news_research_probe --max-queries 10 --output auto_news_research.json
       - name: Assert all candidates are research-only
         run: |
@@ -34,7 +34,12 @@ jobs:
           assert all(x["actionable"] is False and x["trade_signal"] is None
                      and x["publisher_isin_confirmed"] is False
                      and x["timestamp_verified"] is False
+                     and x["stock_analyst"]["source_news_opinion_used"] is False
+                     and x["stock_analyst"]["actionable"] is False
                      for x in doc["research_candidates"])
+          assert doc["analysis_coverage"]["verified_candidates"] == len(doc["research_candidates"])
+          assert doc["analysis_coverage"]["analyzed_or_explicitly_unavailable"] == len(doc["research_candidates"])
+          assert doc["metrics"]["analysis_attempted"] == len(doc["research_candidates"])
           print("RESEARCH ONLY:", doc["metrics"], "headlines queued", doc["headlines_queued"])
           PY
       - name: Save automatic candidate report
