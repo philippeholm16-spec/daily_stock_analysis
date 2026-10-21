@@ -12,7 +12,13 @@ from src.news_first_discovery import parse_news_feed, classify_catalyst
 from src.news_headline_watchlist import build_headline_watchlist
 
 
-ALLOWED_FEEDS = {"placera": "https://www.placera.se/artiklar/rss.xml"}
+ALLOWED_FEEDS = {
+    "placera": "https://www.placera.se/artiklar/rss.xml",
+    # Official Nasdaq Europe consolidated RSS feeds. These are EXCHANGE notices
+    # and Nasdaq news releases, not a complete issuer-regulatory disclosure feed.
+    "nasdaq_main_market_notices": "https://api.news.eu.nasdaq.com/news/rss/mainMarketNotices",
+    "nasdaq_nordic_news": "https://api.news.eu.nasdaq.com/news/rss/nasdaqNordicNews",
+}
 
 
 class NoRedirect(HTTPRedirectHandler):
