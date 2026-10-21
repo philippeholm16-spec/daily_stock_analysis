@@ -9,6 +9,7 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.parse import urlsplit
 
 from src.news_first_discovery import parse_news_feed, classify_catalyst
+from src.news_headline_watchlist import build_headline_watchlist
 
 
 ALLOWED_FEEDS = {"placera": "https://www.placera.se/artiklar/rss.xml"}
@@ -45,6 +46,7 @@ def main():
         "rejected_entries": len(errors),
         "identity_verified": False,
         "actionable": False,
+        "watchlist": build_headline_watchlist(items)[:15],
         "headlines": [
             {"headline": x.headline, "published_at": x.published_at.isoformat(),
              "url": x.url, "catalysts": classify_catalyst(x.headline)}
