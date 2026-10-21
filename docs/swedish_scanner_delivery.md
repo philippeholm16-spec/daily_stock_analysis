@@ -87,3 +87,57 @@ The current `.github/workflows/pr-review.yml` checks **code** via a
 separate manually triggered review; it does not approve securities tips.
 The per-candidate validation above runs automatically inside the research
 workflow.
+
+
+## Development update: independent VERY_GOOD alerts and historical evaluation
+
+**Telegram eligibility has been corrected:** Newspaper discovery priority does
+not influence alert qualification or ranking. The alert filter uses ONLY the
+independent Stock Analyst opportunity grade `VERY_GOOD`, an independently
+reviewed valid indicative stop and resistance target, score at least 85/100,
+net R/R at least 2.0 and projected target upside at least 3%. No alerts are
+sent when no stock meets these requirements. This is technical *scenario*
+potential, not an empirically validated forecast or an actionable order.
+
+The technical model now derives stop levels from recent observed support and
+a volatility (ATR14) buffer. Targets must be repeated observed historical
+resistance; isolated high-price spikes are rejected. An observed resistance
+may still be too close to reach R/R >= 2, in which case no setup is approved.
+The model additionally requires recent enough candles, favorable relative
+volume, low spread and close/chart coherence before assigning VERY_GOOD.
+
+The pre-alert independent review verifies the technical parameters, chart age,
+quote/entry agreement, RR and 1% capital risk. The news article discovery
+priority can be 0 or 10 without changing Stock Analyst's own decision.
+
+`src/stockholm_walkforward.py` provides a leakage-free historical replay:
+historical bars are processed in chronological order, future bars are used
+**only after** a frozen entry/stop/target decision, and ties within a candle
+are treated as stop-loss rather than favorable target fills. It records net R,
+outcome, sample count, win rate and drawdown, with conservative assumed costs
+and gaps. This is not a substitute for out-of-sample live validation.
+
+**Actual exploratory pilot:** the read-only Bulten one-week chart retrieved
+from Avanza MCP contained 233 candles. The historical study evaluated 15
+non-overlapping windows and identified **zero** VERY_GOOD setups. Therefore
+this single-week sample does not yield a measurable win rate or justify claims
+of prediction accuracy; it does verify the complete historical data path.
+
+To progress past news-only discovery, the newly implemented
+`src/stockholm_universe_batch.py` and
+`scripts/stockholm_market_batch_research.py` can balance a verified,
+authorized whole-market reference across Large/Mid/Small Cap and scan a
+maximum of 12 independently mapped equities per run. Exact ISIN/XSTO/share
+identity is checked on each provider call. Missing charts yield explicitly
+unavailable analysis. **This is a scanner infrastructure milestone only**:
+no complete independent and current licensed XSTO reference has been supplied
+or verified, so no full-market sweep has occurred.
+
+**Activation status:** `main` was not modified, and automatic Telegram
+notifications remain dormant. The previously tested Telegram chat credentials
+remain in GitHub Secrets. No payments, subscription, login or order flow is
+used by the development workflows.
+
+Before production activation, verify authorized universe data, data
+freshness/entitlements, acceptable API rate limits, realistic execution costs,
+and a substantially larger cross-stock out-of-sample evaluation.
