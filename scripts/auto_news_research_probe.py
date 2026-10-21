@@ -13,12 +13,13 @@ from pathlib import Path
 from scripts.avanza_mcp_bridge import unwrap
 from scripts.public_rss_probe import ALLOWED_FEEDS, fetch_public_feed
 from src.news_first_discovery import parse_news_feed
+from src.google_swedish_news import collect_google_news
 from src.automatic_news_candidates import (
     select_headline_searches, assess_search_candidates, rank_research_candidate,
 )
 
 
-async def run(*, max_queries=12, delay_seconds=0.6):
+async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
     if not 1 <= max_queries <= 12:
         raise ValueError("max_queries_out_of_bounds")
     if not 0.5 <= delay_seconds <= 10:
@@ -27,8 +28,14 @@ async def run(*, max_queries=12, delay_seconds=0.6):
     payload = fetch_public_feed(ALLOWED_FEEDS["placera"])
     items, feed_errors = parse_news_feed(payload, source="Placera",
                                           verified_isin_field=False, max_items=40)
+    google = {"news_items": [], "errors": [], "groups": {}}
+    if include_google_news:
+        google = collect_google_news(now=fetched_at)
+    # Prioritize direct publisher RSS; augment with Google News index headlines.
+    # News matched from either source remains provisional and research-only.
+    combined = items + google["news_items"]
     search_items, exclusions = select_headline_searches(
-        items, now=fetched_at, max_queries=max_queries)
+        combined, now=fetched_at, max_queries=max_queries)
     candidates, rejected = [], []
     stats = {"search_requests": 0, "identity_requests": 0,
              "quote_requests": 0, "matched": 0, "search_error": 0}
@@ -89,6 +96,9 @@ async def run(*, max_queries=12, delay_seconds=0.6):
         "fetched_at_utc": fetched_at.isoformat(),
         "market_scope": "bounded news-driven sample; NOT full XSTO coverage",
         "news_items_parsed": len(items),
+        "google_news_items": len(google["news_items"]),
+        "google_news_groups": google["groups"],
+        "google_news_errors": google["errors"],
         "news_items_invalid": len(feed_errors),
         "headlines_queued": len(search_items),
         "presearch_rejections": exclusions,
@@ -108,9 +118,11 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("auto_news_research.json"))
     parser.add_argument("--max-queries", type=int, default=12)
     parser.add_argument("--delay-seconds", type=float, default=0.6)
+    parser.add_argument("--no-google-news", action="store_true")
     args = parser.parse_args()
     report = asyncio.run(run(max_queries=args.max_queries,
-                              delay_seconds=args.delay_seconds))
+                              delay_seconds=args.delay_seconds,
+                              include_google_news=not args.no_google_news))
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
