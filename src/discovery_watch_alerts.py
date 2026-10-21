@@ -1,56 +1,70 @@
-"""Select Telegram discovery alerts only AFTER independent per-stock review.
+"""Telegram research alerts require Stock Analyst's own VERY GOOD opportunity.
 
-Score is the 0-10 news/volume DISCOVERY priority, not Stock Analyst's 0-100
-technical score or a buy recommendation. A score of exactly 6 is NOT >6.
-Deduplicate each instrument per run; report all filtered/rejected entries.
+Publisher discovery priority is never part of eligibility or ranking.
+All candidates first pass independent per-item review. Missing/no valid
+stop/target, stale data or a lower stock score means no push notification.
+No trading is authorized by this research-only filter.
 """
-from datetime import datetime
+from math import isfinite
 
 
-def select_watch_alerts(review, *, min_score_exclusive=6):
+def select_watch_alerts(review, *, min_analyst_score=85):
     if (not isinstance(review, dict) or review.get("mode") != "RESEARCH_ONLY"
             or review.get("all_checked") is not True
             or review.get("actionable_count") != 0
             or not isinstance(review.get("accepted"), list)
             or not isinstance(review.get("rejected"), list)):
         raise ValueError("independent_research_review_required")
-    if (isinstance(min_score_exclusive, bool)
-            or not isinstance(min_score_exclusive, (int, float))
-            or not 0 <= min_score_exclusive < 10):
-        raise ValueError("invalid_discovery_alert_threshold")
-    chosen = {}
-    below = []
-    for candidate in review["accepted"]:
-        score = candidate.get("discovery_priority")
-        if (isinstance(score, bool)
-                or not isinstance(score, (float, int))
-                or not 0 <= score <= 10):
-            raise ValueError("invalid_discovery_priority_after_review")
-        if score <= min_score_exclusive:
-            below.append(candidate)
+    if (isinstance(min_analyst_score, bool)
+            or not isinstance(min_analyst_score, (int, float))
+            or not isfinite(min_analyst_score)
+            or not 80 <= min_analyst_score <= 100):
+        raise ValueError("invalid_independent_score_threshold")
+    by_isin = {}
+    not_very_good = 0
+    for row in review["accepted"]:
+        a = row.get("stock_analyst") or {}
+        score = a.get("score")
+        qualified = (
+            isinstance(score, (int, float)) and not isinstance(score, bool)
+            and isfinite(score) and score >= min_analyst_score
+            and a.get("status") == "ANALYZED_INDICATIVE_SETUP"
+            and a.get("opportunity_grade") == "VERY_GOOD"
+            and a.get("source_news_opinion_used") is False
+            and a.get("actionable") is False
+            and isinstance(a.get("net_rr"), (int, float))
+            and not isinstance(a["net_rr"], bool) and a["net_rr"] >= 2.0
+            and isinstance(a.get("potential_pct"), (int, float))
+            and not isinstance(a["potential_pct"], bool)
+            and a["potential_pct"] >= 3.0
+        )
+        if not qualified:
+            not_very_good += 1
             continue
-        identity = candidate["isin"]
-        # Same share from two different news headlines: only one alert. Prefer
-        # highest discovery priority; timestamps break ties deterministically.
-        prior = chosen.get(identity)
-        if prior is None or (score, candidate["published_at"], candidate["news_url"]) > (
-                prior["discovery_priority"], prior["published_at"], prior["news_url"]):
-            chosen[identity] = candidate
-    selected = sorted(chosen.values(), key=lambda r: (
-        -r["discovery_priority"],
-        -float(r["stock_analyst"].get("score") or 0),
-        r["ticker"]
+        isin = row["isin"]
+        old = by_isin.get(isin)
+        if old is None or (
+            score, a["net_rr"], row["published_at"], row["news_url"]
+        ) > (
+            old["stock_analyst"]["score"],
+            old["stock_analyst"]["net_rr"],
+            old["published_at"], old["news_url"]
+        ):
+            by_isin[isin] = row
+    ordered = sorted(by_isin.values(), key=lambda row: (
+        -row["stock_analyst"]["score"],
+        -row["stock_analyst"]["net_rr"],
+        row["ticker"]
     ))
     return {
         **review,
-        "accepted": selected,
-        # This is a delivery FILTER, not a new independent approval mechanism.
+        "accepted": ordered,
         "reviewed_and_valid": len(review["accepted"]),
-        "below_threshold_count": len(below),
-        "duplicate_ticker_count": len(review["accepted"]) - len(below) - len(selected),
-        "alert_threshold_exclusive": min_score_exclusive,
-        "alert_count": len(selected),
-        "delivery_type": "NEWS_DISCOVERY_WATCH",
+        "below_threshold_count": not_very_good,
+        "duplicate_ticker_count": len(review["accepted"]) - not_very_good - len(ordered),
+        "min_independent_analyst_score": min_analyst_score,
+        "alert_count": len(ordered),
+        "delivery_type": "VERY_GOOD_STOCK_ANALYST_RESEARCH",
         "all_checked": True,
         "actionable_count": 0,
     }
