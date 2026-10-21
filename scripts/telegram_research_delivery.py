@@ -17,11 +17,11 @@ from src.discovery_watch_alerts import select_watch_alerts
 from src.telegram_research_digest import format_research_digest
 
 
-def build_approved_digest(report, *, threshold=6):
+def build_approved_digest(report, *, min_analyst_score=85):
     reviewed = review_research_report(report)
     if not reviewed["all_checked"]:
         raise ValueError("partial_review")
-    alerts = select_watch_alerts(reviewed, min_score_exclusive=threshold)
+    alerts = select_watch_alerts(reviewed, min_analyst_score=min_analyst_score)
     return alerts, format_research_digest(alerts)
 
 
@@ -56,17 +56,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--send", action="store_true", help="Requires explicit second opt-in")
-    parser.add_argument("--min-discovery-score-exclusive", type=float, default=6)
+    parser.add_argument("--min-stock-analyst-score", type=float, default=85)
     args = parser.parse_args()
     report = json.loads(args.report.read_text(encoding="utf-8"))
     review, digest = build_approved_digest(
-        report, threshold=args.min_discovery_score_exclusive)
+        report, min_analyst_score=args.min_stock_analyst_score)
     print(json.dumps({
         "checked": review["checked"],
         "reviewed_and_valid": review["reviewed_and_valid"],
         "alert_count": review["alert_count"],
         "below_threshold_count": review["below_threshold_count"],
-        "min_discovery_score_exclusive": review["alert_threshold_exclusive"],
+        "min_stock_analyst_score": review["min_independent_analyst_score"],
         "rejected": len(review["rejected"]), "mode": "RESEARCH_ONLY",
         "send_requested": args.send,
     }, ensure_ascii=False))
