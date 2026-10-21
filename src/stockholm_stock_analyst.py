@@ -185,13 +185,15 @@ def analyze_xsto_candidate(candidate, raw_chart, *, now=None,
             Candidate(
                 isin=candidate["isin"], mic="XSTO", symbol=candidate["ticker"],
                 currency="SEK", last_price=price, entry=price, stop=stop,
-                target=target, turnover_sek=float(turnover or 0), as_of=now,
+                target=target, turnover_sek=float(turnover or 0), as_of=bars[-1]["at"],
                 catalyst=False
             ),
             capital_sek=capital_sek, commission_sek_per_side=commission,
             spread_sek_per_share=spread_per_share,
             slippage_sek_per_share_per_side=slippage_per_share_per_side,
-            now=now,
+            # Historical price-bar timestamp is used ONLY for a what-if
+            # cost/risk calculation; this is never a live data freshness check.
+            now=bars[-1]["at"],
         )
     except (ValueError, TypeError, ZeroDivisionError, OverflowError):
         return _decline("Risk- och positionsberäkningen kunde inte valideras.")
