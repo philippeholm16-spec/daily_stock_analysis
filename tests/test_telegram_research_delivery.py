@@ -29,6 +29,7 @@ def report():
                 "engine": "Stock Analyst Sweden / independent technical v1",
                 "status": "ANALYZED_INDICATIVE_SETUP",
                 "score": 84, "quality": "Hög teknisk styrka",
+                "potential_quality": "Hög teknisk affärspotential",
                 "why": ["Stigande kurs jämfört med glidande medelvärde",
                         "Relativ volym 1,7 gånger"],
                 "risks": ["Historisk kurs är inte realtidsverifierad"],
@@ -53,6 +54,7 @@ def test_approved_report_generates_delayed_research_disclaimer():
     assert "Potential" in digest and "8.18 %" in digest
     assert "VARFÖR" in digest
     assert "84/100" in digest
+    assert "Affärspotential: Hög teknisk affärspotential" in digest
     assert "bevakningspoäng" not in digest
 
 
