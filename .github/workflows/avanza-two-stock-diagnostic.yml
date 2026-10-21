@@ -1,0 +1,39 @@
+name: Avanza two-stock live diagnostic
+
+on:
+  push:
+    branches:
+      - feature/swedish-market-scanner
+    paths:
+      - '.github/workflows/avanza-two-stock-diagnostic.yml'
+      - 'scripts/avanza_mcp_bridge.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read-two-public-quotes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install public Avanza MCP
+        run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
+      - name: Read two public quotes (no orders or signals)
+        run: python -m scripts.avanza_mcp_bridge --order-book-id 5269 --order-book-id 1296604 --output avanza_diagnostic.json
+      - name: Assert two valid data-only quotes
+        run: |
+          python - <<'PY'
+          import json
+          data = json.load(open("avanza_diagnostic.json"))
+          quotes = data["quotes"]
+          assert len(quotes) == 2, quotes
+          assert all(q["status"] == "DATA_ONLY_TIMESTAMP_UNVERIFIED" for q in quotes), quotes
+          assert all(q["last_price"] > 0 and q["volume"] >= 0 for q in quotes), quotes
+          assert all(q["actionable"] is False for q in quotes), quotes
+          print("TWO_REAL_QUOTES_VERIFIED_DATA_ONLY", [(q["order_book_id"], q["last_price"], q["volume"]) for q in quotes])
+          PY
