@@ -21,7 +21,7 @@ def fixture():
             "source": "Placera",
             "published_at": (NOW-timedelta(hours=1)).isoformat(),
             "news_url": "https://www.placera.se/nyheter/bulten-test",
-            "research_score": 6, "actionable": False, "trade_signal": None,
+            "discovery_priority": 6, "actionable": False, "trade_signal": None,
             "publisher_isin_confirmed": False, "timestamp_verified": False,
             "stock_analyst": {
                 "engine": "Stock Analyst Sweden / independent technical v1",
