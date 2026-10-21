@@ -67,20 +67,25 @@ async def scan_batch(plan, call_tool, *, now, capital_sek=15000,
                 else None
             )
             chart = None
-            first = await request("get_stock_chart", {
-                "order_book_id": book, "time_period": "one_week",
-                "offset": 0, "limit": 100
-            })
-            paging = first.get("pagination") or {}
-            total = paging.get("total")
-            if isinstance(total, int) and 25 <= total <= 2000:
-                if total <= 100:
-                    chart = first
-                else:
-                    chart = await request("get_stock_chart", {
-                        "order_book_id": book, "time_period": "one_week",
-                        "offset": total-80, "limit": 80
-                    })
+            try:
+                first = await request("get_stock_chart", {
+                    "order_book_id": book, "time_period": "one_week",
+                    "offset": 0, "limit": 100
+                })
+                paging = first.get("pagination") or {}
+                total = paging.get("total")
+                if isinstance(total, int) and 25 <= total <= 2000:
+                    if total <= 100:
+                        chart = first
+                    else:
+                        chart = await request("get_stock_chart", {
+                            "order_book_id": book, "time_period": "one_week",
+                            "offset": total-80, "limit": 80
+                        })
+            except Exception:
+                # A verified stock stays in the coverage report. No chart
+                # means explicit unavailable analysis, never a forged setup.
+                chart = None
             analysis = analyze_xsto_candidate({
                 **identity,
                 "last_price": last, "turnover_proxy_sek": turnover,
