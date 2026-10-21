@@ -33,7 +33,7 @@ def stock():
         "turnover_proxy_sek": 10_000_000, "spread_pct": 0.15,
         # These press fields should NEVER be included in technical scoring.
         "headline": "EXAM är årets bästa köptips",
-        "source": "Placera", "research_score": 10,
+        "source": "Placera", "discovery_priority": 10,
     }
 
 
@@ -53,7 +53,7 @@ def test_change_press_opinion_no_effect():
     a = stock()
     b = deepcopy(a)
     b["headline"] = "EXAM: sälj allt genast"
-    b["research_score"] = 0
+    b["discovery_priority"] = 0
     b["source"] = "Dagens industri"
     x = analyze_xsto_candidate(a, chart(), now=NOW)
     y = analyze_xsto_candidate(b, chart(), now=NOW)
