@@ -50,8 +50,10 @@ This is deterministic validation, not a second AI's judgment.
 The branch workflow runs **dry-run by default**, archives the findings as a
 GitHub Actions artifact for three days, and only sends when an explicit
 `workflow_dispatch.send_telegram=true` is issued after the workflow file
-is on the repository default branch, or when an explicitly marked branch
-push contains `[send-swedish-research]`. All sends require both secrets,
+is on the repository default branch. The one-time smoke delivery was
+completed successfully, and its branch-push trigger has been disabled.
+The prepared weekday schedule at 08:00 Europe/Stockholm is dormant until
+approved for the default branch. All sends require both secrets,
 are plain-text, and do not transmit any private trading-account data.
 Do not merge or change `main` without the owner's approval.
 
