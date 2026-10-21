@@ -35,7 +35,11 @@ async def check(query, order_book_id=None):
         ids = [h.get("order_book_id") for h in hits
                if h.get("order_book_id") and h.get("isin")
                and h.get("currency") == "SEK"]
-        if order_book_id is not None:\n            if order_book_id not in [h.get("order_book_id") for h in hits]:\n                raise ValueError("Selected Avanza ID not present in search results")\n            ids = [order_book_id]\n        if len(ids) != 1:
+        if order_book_id is not None:
+            if order_book_id not in [h.get("order_book_id") for h in hits]:
+                raise ValueError("Selected Avanza ID not present in search results")
+            ids = [order_book_id]
+        if len(ids) != 1:
             print("AMBIGUOUS: Select an exact verified order-book ID from the candidates.")
             return
         quote = unwrap(await client.call_tool("get_stock_quote", {
@@ -48,7 +52,8 @@ async def check(query, order_book_id=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--query", default="Volvo B")
-    parser.add_argument("--order-book-id", default=None)\n    args = parser.parse_args()
+    parser.add_argument("--order-book-id", default=None)
+    args = parser.parse_args()
     asyncio.run(check(args.query, args.order_book_id))
 
 
