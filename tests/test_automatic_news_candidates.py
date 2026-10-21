@@ -76,7 +76,7 @@ def test_score_research_only_delayed_quotes():
                                      {"last": 75.8, "totalVolumeTraded": 373794.0,
                                       "buy": 75.7, "sell": 75.8, "isRealTime": False},
                                      fetched_at=NOW)
-    assert result["research_score"] == 7
+    assert result["discovery_priority"] == 7
     assert result["turnover_proxy_sek"] > 5_000_000
     assert result["spread_pct"] is not None
     assert result["relative_volume"] is None
