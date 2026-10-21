@@ -3,8 +3,10 @@
 This is *not* news attribution by ISIN, and NOT a trading signal.
 One public RSS request and three specified public instrument IDs only.
 """
+import argparse
 import asyncio
 import json
+from pathlib import Path
 from datetime import datetime, timezone
 
 from scripts.avanza_mcp_bridge import unwrap
@@ -67,7 +69,13 @@ async def run():
 
 
 def main():
-    print(json.dumps(asyncio.run(run()), ensure_ascii=False, indent=2))
+    parser = argparse.ArgumentParser(description="Research-only RSS + Avanza diagnostic")
+    parser.add_argument("--output", type=Path, default=None)
+    args = parser.parse_args()
+    report = json.dumps(asyncio.run(run()), ensure_ascii=False, indent=2) + "\n"
+    if args.output is not None:
+        args.output.write_text(report, encoding="utf-8")
+    print(report)
 
 
 if __name__ == "__main__":
