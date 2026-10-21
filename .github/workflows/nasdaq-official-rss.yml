@@ -1,0 +1,27 @@
+name: Official Nasdaq Nordic RSS diagnostics
+on:
+  push:
+    branches: [feature/swedish-market-scanner]
+    paths:
+      - '.github/workflows/nasdaq-official-rss.yml'
+      - 'scripts/public_rss_probe.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  official-nasdaq-headlines:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        feed: [nasdaq_main_market_notices, nasdaq_nordic_news]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Read official Nasdaq RSS once (no articles or trading)
+        run: python -m scripts.public_rss_probe --source "${{ matrix.feed }}"
