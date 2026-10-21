@@ -42,7 +42,7 @@ def test_low_reward_to_risk_rejected():
 
 
 def test_costs_and_risk_budget():
-    d = evaluate(sample(), capital_sek=25000, commission_sek_per_side=10,
+    d = evaluate(sample(target=108), capital_sek=25000, commission_sek_per_side=10,
                  spread_sek_per_share=0.2, slippage_sek_per_share_per_side=0.2, now=NOW)
     assert d.eligible and d.risk_sek <= 250
 
