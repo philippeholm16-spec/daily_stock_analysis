@@ -13,7 +13,7 @@ def chart(*, with_resistance=True):
     rows = []
     for i in range(40):
         close = 100.0 + i * 0.05
-        hi = 110.0 if i == 30 and with_resistance else close + 0.15
+        hi = 110.0 if i in (28, 30) and with_resistance else close + 0.04
         rows.append({
             "timestamp": int((NOW - timedelta(minutes=(39-i)*10)).timestamp()*1000),
             "open": round(close-0.05, 2), "high": round(hi, 2),
@@ -46,6 +46,8 @@ def test_all_levels_derived_from_prices_not_publisher_opinion():
     assert result["net_rr"] >= 2
     assert result["max_risk_sek"] <= 150
     assert result["source_news_opinion_used"] is False
+    assert result["opportunity_grade"] == "VERY_GOOD"
+    assert result["resistance_touches"] >= 2
     assert result["actionable"] is False
 
 
@@ -105,3 +107,30 @@ def test_chart_resolution_wrong_fails():
     sample["data"]["metadata"]["resolution"]["chartResolution"] = "week"
     with pytest.raises(ValueError, match="incomplete_or_unsupported"):
         validate_chart(sample, now=NOW)
+
+
+def test_single_unconfirmed_spike_cannot_be_target():
+    sample = chart()
+    sample["data"]["ohlc"][28]["high"] = sample["data"]["ohlc"][28]["close"] + 0.04
+    result = analyze_xsto_candidate(stock(), sample, now=NOW)
+    assert result["status"] == "ANALYZED_NO_VALID_SETUP"
+    assert result["opportunity_grade"] == "NONE"
+    assert result["sell_point"] is None
+
+
+def test_wide_spread_blocks_very_good_grade_without_inventing_levels():
+    sample = stock()
+    sample["spread_pct"] = 0.70
+    result = analyze_xsto_candidate(sample, chart(), now=NOW)
+    assert result["status"] == "ANALYZED_INDICATIVE_SETUP"
+    assert result["opportunity_grade"] == "WATCH_ONLY"
+    assert result["sell_point"] == 110
+
+
+def test_below_three_percent_upside_not_very_good():
+    sample = stock()
+    sample["last_price"] = 107.5
+    # Keeping chart unchanged makes the quote/chart gap > 2%, a separate
+    # defensive exclusion even when levels could hypothetically be valid.
+    result = analyze_xsto_candidate(sample, chart(), now=NOW)
+    assert result["opportunity_grade"] != "VERY_GOOD"
