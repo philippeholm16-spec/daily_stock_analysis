@@ -15,6 +15,7 @@ from scripts.public_rss_probe import ALLOWED_FEEDS, fetch_public_feed
 from src.news_first_discovery import parse_news_feed
 from src.google_swedish_news import collect_google_news
 from src.news_source_diversity import select_diverse_searches
+from src.stockholm_stock_analyst import analyze_xsto_candidate
 from src.automatic_news_candidates import (
     select_headline_searches, assess_search_candidates, rank_research_candidate,
 )
@@ -38,7 +39,9 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
         items, google["news_items"], now=fetched_at, max_queries=max_queries)
     candidates, rejected = [], []
     stats = {"search_requests": 0, "identity_requests": 0,
-             "quote_requests": 0, "matched": 0, "search_error": 0}
+             "quote_requests": 0, "chart_requests": 0,
+             "matched": 0, "analysis_attempted": 0, "analysis_completed": 0,
+             "search_error": 0}
     from fastmcp import Client
     from avanza_mcp import mcp
     async with Client(mcp) as client:
@@ -76,12 +79,48 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
                 if identity is None:
                     rejected.append({"query": news["query"], "reason": reason})
                     continue
+                # Every verified discovered instrument gets its OWN independent
+                # Stock Analyst assessment, even when pricing/history fails.
                 await asyncio.sleep(delay_seconds)
-                stats["quote_requests"] += 1
-                raw_quote = unwrap(await client.call_tool(
-                    "get_stock_quote", {"order_book_id": identity["order_book_id"]}))
+                raw_quote = {}
+                try:
+                    stats["quote_requests"] += 1
+                    raw_quote = unwrap(await client.call_tool(
+                        "get_stock_quote", {"order_book_id": identity["order_book_id"]}))
+                except Exception:
+                    rejected.append({"query": news["query"], "reason": "quote_lookup_failed"})
                 row = rank_research_candidate(
                     news, identity, raw_quote, fetched_at=fetched_at)
+                raw_chart = None
+                try:
+                    await asyncio.sleep(delay_seconds)
+                    stats["chart_requests"] += 1
+                    first_page = unwrap(await client.call_tool(
+                        "get_stock_chart", {
+                            "order_book_id": identity["order_book_id"],
+                            "time_period": "one_week", "offset": 0, "limit": 100
+                        }))
+                    pagination = first_page.get("pagination") or {}
+                    total_bars = pagination.get("total")
+                    if isinstance(total_bars, int) and total_bars >= 25 and total_bars <= 2000:
+                        if total_bars <= 100:
+                            raw_chart = first_page
+                        else:
+                            await asyncio.sleep(delay_seconds)
+                            stats["chart_requests"] += 1
+                            raw_chart = unwrap(await client.call_tool(
+                                "get_stock_chart", {
+                                    "order_book_id": identity["order_book_id"],
+                                    "time_period": "one_week",
+                                    "offset": total_bars - 80, "limit": 80
+                                }))
+                except Exception:
+                    rejected.append({"query": news["query"], "reason": "chart_lookup_failed"})
+                stats["analysis_attempted"] += 1
+                result = analyze_xsto_candidate(row, raw_chart, now=fetched_at)
+                row["stock_analyst"] = result
+                if result["status"] != "ANALYSIS_UNAVAILABLE":
+                    stats["analysis_completed"] += 1
                 candidates.append(row)
                 stats["matched"] += 1
             except Exception as exc:
@@ -90,7 +129,10 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
                                  "reason": "provider_error_" + type(exc).__name__})
             finally:
                 await asyncio.sleep(delay_seconds)
-    candidates.sort(key=lambda row: (-row["research_score"], row["ticker"]))
+    candidates.sort(key=lambda row: (
+        -float(row["stock_analyst"]["score"] or 0),
+        row["ticker"]
+    ))
     return {
         "source": "Placera public RSS + unofficial Avanza MCP",
         "fetched_at_utc": fetched_at.isoformat(),
@@ -106,7 +148,12 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
         "provider_rejections": rejected,
         "metrics": stats,
         "research_candidates": candidates,
-        "ranking": "catalyst/recency/observed price-volume proxy; NOT validated momentum or relative volume",
+        "ranking": "Stock Analyst Sweden independent technical score; press discovery priority is NOT a recommendation",
+        "analysis_coverage": {"verified_candidates": len(candidates),
+                              "analyzed_or_explicitly_unavailable": sum(
+                                  isinstance(row.get("stock_analyst"), dict)
+                                  for row in candidates),
+                              "source_opinions_used_in_analysis": False},
         "publisher_isin_verified": False,
         "quote_freshness_verified": False,
         "trade_signals_enabled": False,
