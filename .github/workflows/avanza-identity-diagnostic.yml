@@ -1,0 +1,25 @@
+name: Avanza public stock identity diagnostic
+on:
+  push:
+    branches: [feature/swedish-market-scanner]
+    paths:
+      - 'scripts/avanza_identity_probe.py'
+      - '.github/workflows/avanza-identity-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-public-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install unofficial read-only provider
+        run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
+      - name: Fetch exact stock identities and name-search candidates
+        run: python -m scripts.avanza_identity_probe
