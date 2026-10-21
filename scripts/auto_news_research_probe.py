@@ -14,6 +14,7 @@ from scripts.avanza_mcp_bridge import unwrap
 from scripts.public_rss_probe import ALLOWED_FEEDS, fetch_public_feed
 from src.news_first_discovery import parse_news_feed
 from src.google_swedish_news import collect_google_news
+from src.news_source_diversity import select_diverse_searches
 from src.automatic_news_candidates import (
     select_headline_searches, assess_search_candidates, rank_research_candidate,
 )
@@ -33,9 +34,8 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
         google = collect_google_news(now=fetched_at)
     # Prioritize direct publisher RSS; augment with Google News index headlines.
     # News matched from either source remains provisional and research-only.
-    combined = items + google["news_items"]
-    search_items, exclusions = select_headline_searches(
-        combined, now=fetched_at, max_queries=max_queries)
+    search_items, exclusions, source_counts = select_diverse_searches(
+        items, google["news_items"], now=fetched_at, max_queries=max_queries)
     candidates, rejected = [], []
     stats = {"search_requests": 0, "identity_requests": 0,
              "quote_requests": 0, "matched": 0, "search_error": 0}
@@ -101,6 +101,7 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
         "google_news_errors": google["errors"],
         "news_items_invalid": len(feed_errors),
         "headlines_queued": len(search_items),
+        "source_query_counts": source_counts,
         "presearch_rejections": exclusions,
         "provider_rejections": rejected,
         "metrics": stats,
