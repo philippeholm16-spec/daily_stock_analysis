@@ -21,6 +21,6 @@ jobs:
       - name: Install isolated test dependencies
         run: python -m pip install pytest
       - name: Compile scanner modules
-        run: python -m py_compile src/swedish_market_scanner.py src/swedish_market_universe.py src/avanza_mcp_adapter.py src/avanza_batch_quality.py src/swedish_stock_news.py src/news_first_discovery.py src/swedish_news_sources.py src/news_headline_watchlist.py src/news_market_join.py scripts/avanza_mcp_bridge.py
+        run: python -m py_compile src/swedish_market_scanner.py src/swedish_market_universe.py src/avanza_mcp_adapter.py src/avanza_batch_quality.py src/swedish_stock_news.py src/news_first_discovery.py src/swedish_news_sources.py src/news_headline_watchlist.py src/news_market_join.py src/news_company_research.py scripts/news_avanza_research_probe.py scripts/avanza_mcp_bridge.py
       - name: Run offline validation tests
-        run: python -m pytest --noconftest -q tests/test_swedish_market_scanner.py tests/test_swedish_market_universe.py tests/test_avanza_mcp_adapter.py tests/test_avanza_real_response_mapping.py tests/test_avanza_batch_quality.py tests/test_swedish_stock_news.py tests/test_news_first_discovery.py tests/test_swedish_news_sources.py tests/test_news_headline_watchlist.py tests/test_news_market_join.py
+        run: python -m pytest --noconftest -q tests/test_swedish_market_scanner.py tests/test_swedish_market_universe.py tests/test_avanza_mcp_adapter.py tests/test_avanza_real_response_mapping.py tests/test_avanza_batch_quality.py tests/test_swedish_stock_news.py tests/test_news_first_discovery.py tests/test_swedish_news_sources.py tests/test_news_headline_watchlist.py tests/test_news_market_join.py tests/test_news_company_research.py
