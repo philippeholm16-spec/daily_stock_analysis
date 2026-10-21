@@ -41,7 +41,7 @@ jobs:
       - name: Review every proposal and show dry-run digest
         run: python -m scripts.telegram_research_delivery --report auto_news_research.json
       - name: Send only when manually opted-in and reviewed
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.send_telegram) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[send-swedish-research]')) }}
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.send_telegram) }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
