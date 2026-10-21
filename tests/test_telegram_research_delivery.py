@@ -21,7 +21,7 @@ def report():
             "headline": "Bulten ökar rörelseresultatet", "source": "Placera",
             "published_at": (NOW - timedelta(hours=1)).isoformat(),
             "news_url": "https://www.placera.se/nyheter/bulten",
-            "catalysts": ["report"], "discovery_priority": 6,
+            "catalysts": ["report"], "discovery_priority": 7,
             "last_price": 75.8,
             "actionable": False, "trade_signal": None,
             "publisher_isin_confirmed": False, "timestamp_verified": False,
@@ -55,7 +55,7 @@ def test_approved_report_generates_delayed_research_disclaimer():
     assert "VARFÖR" in digest
     assert "84/100" in digest
     assert "Affärspotential: Hög teknisk affärspotential" in digest
-    assert "bevakningspoäng" not in digest
+    assert "Bevakningspoäng 7/10" in digest
 
 
 def test_fake_trade_signal_blocks_delivery():
@@ -105,8 +105,8 @@ def test_independent_stock_analyst_score_not_press_priority():
     data = report()
     data["research_candidates"][0]["discovery_priority"] = 0
     _, digest = build_approved_digest(data)
-    assert "84/100" in digest
-    assert "0/10" not in digest
+    assert "84/100" not in digest
+    assert "BULTEN" not in digest
 
 
 def test_missing_analysis_yields_no_telegram_tip():
@@ -114,4 +114,36 @@ def test_missing_analysis_yields_no_telegram_tip():
     data["research_candidates"][0].pop("stock_analyst")
     reviewed, digest = build_approved_digest(data)
     assert not reviewed["accepted"]
+    assert "BULTEN" not in digest
+
+
+def test_score_equal_to_six_produces_no_alert():
+    data = report()
+    data["research_candidates"][0]["discovery_priority"] = 6
+    reviewed, digest = build_approved_digest(data)
+    assert reviewed["checked"] == 1
+    assert reviewed["reviewed_and_valid"] == 1
+    assert reviewed["alert_count"] == 0
+    assert "BULTEN" not in digest
+
+
+def test_score_above_six_alerts_despite_no_setup():
+    data = report()
+    data["research_candidates"][0]["discovery_priority"] = 7
+    a = data["research_candidates"][0]["stock_analyst"]
+    a["status"] = "ANALYZED_NO_VALID_SETUP"
+    for key in ("entry_price", "lowest_sell_point", "sell_point", "potential_pct"):
+        a[key] = None
+    reviewed, digest = build_approved_digest(data)
+    assert reviewed["alert_count"] == 1
+    assert "Ej fastställd" in digest
+    assert "Stock Analysts egna bedömning" in digest
+
+
+def test_threshold_rejects_nonreviewed_high_score():
+    data = report()
+    data["research_candidates"][0]["discovery_priority"] = 9
+    data["research_candidates"][0].pop("stock_analyst")
+    reviewed, digest = build_approved_digest(data)
+    assert reviewed["alert_count"] == 0
     assert "BULTEN" not in digest
