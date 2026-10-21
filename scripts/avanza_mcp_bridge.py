@@ -32,6 +32,8 @@ def normalize_quote(raw):
     volume = raw.get("totalVolumeTraded")
     # Upstream timestamp fields are integer-valued and may use undocumented
     # units; never infer timestamp units or freshness from receipt time.
+    if isinstance(volume, float) and volume.is_integer() and volume >= 0:
+        volume = int(volume)
     return {"last_price": last, "volume": volume}
 
 
