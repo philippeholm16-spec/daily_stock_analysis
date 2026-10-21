@@ -21,11 +21,14 @@ from src.automatic_news_candidates import (
 )
 
 
-async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
+async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True,
+              capital_sek=15000):
     if not 1 <= max_queries <= 12:
         raise ValueError("max_queries_out_of_bounds")
     if not 0.5 <= delay_seconds <= 10:
         raise ValueError("delay_seconds_out_of_bounds")
+    if isinstance(capital_sek, bool) or not isinstance(capital_sek, (int, float)) or not 10000 <= capital_sek <= 25000:
+        raise ValueError("capital_sek_must_be_between_10000_and_25000")
     fetched_at = datetime.now(timezone.utc)
     payload = fetch_public_feed(ALLOWED_FEEDS["placera"])
     items, feed_errors = parse_news_feed(payload, source="Placera",
@@ -117,7 +120,8 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
                 except Exception:
                     rejected.append({"query": news["query"], "reason": "chart_lookup_failed"})
                 stats["analysis_attempted"] += 1
-                result = analyze_xsto_candidate(row, raw_chart, now=fetched_at)
+                result = analyze_xsto_candidate(row, raw_chart, now=fetched_at,
+                                                 capital_sek=capital_sek)
                 row["stock_analyst"] = result
                 if result["status"] != "ANALYSIS_UNAVAILABLE":
                     stats["analysis_completed"] += 1
@@ -136,6 +140,7 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True):
     return {
         "source": "Placera public RSS + unofficial Avanza MCP",
         "fetched_at_utc": fetched_at.isoformat(),
+        "capital_sek": capital_sek,
         "market_scope": "bounded news-driven sample; NOT full XSTO coverage",
         "news_items_parsed": len(items),
         "google_news_items": len(google["news_items"]),
@@ -167,10 +172,12 @@ def main():
     parser.add_argument("--max-queries", type=int, default=12)
     parser.add_argument("--delay-seconds", type=float, default=0.6)
     parser.add_argument("--no-google-news", action="store_true")
+    parser.add_argument("--capital-sek", type=float, default=15000)
     args = parser.parse_args()
     report = asyncio.run(run(max_queries=args.max_queries,
                               delay_seconds=args.delay_seconds,
-                              include_google_news=not args.no_google_news))
+                              include_google_news=not args.no_google_news,
+                              capital_sek=args.capital_sek))
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
