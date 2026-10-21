@@ -120,8 +120,19 @@ async def run(*, max_queries=12, delay_seconds=0.6, include_google_news=True,
                 except Exception:
                     rejected.append({"query": news["query"], "reason": "chart_lookup_failed"})
                 stats["analysis_attempted"] += 1
-                result = analyze_xsto_candidate(row, raw_chart, now=fetched_at,
-                                                 capital_sek=capital_sek)
+                # Hard data boundary: press headlines, discovery priority,
+                # editorial sources and even their opinions are NEVER passed
+                # to Stock Analyst's independent technical evaluator.
+                market_evidence = {
+                    key: row.get(key) for key in (
+                        "mic", "isin", "ticker", "identity_source",
+                        "last_price", "turnover_proxy_sek", "spread_pct"
+                    )
+                }
+                result = analyze_xsto_candidate(
+                    market_evidence, raw_chart, now=fetched_at,
+                    capital_sek=capital_sek
+                )
                 row["stock_analyst"] = result
                 if result["status"] != "ANALYSIS_UNAVAILABLE":
                     stats["analysis_completed"] += 1
