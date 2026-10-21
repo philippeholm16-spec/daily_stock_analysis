@@ -1,0 +1,25 @@
+name: Avanza stock chart read-only diagnostic
+on:
+  push:
+    branches: [feature/swedish-market-scanner]
+    paths:
+      - 'scripts/avanza_chart_probe.py'
+      - '.github/workflows/avanza-chart-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-public-ohlc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install public read-only Avanza MCP
+        run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
+      - name: Inspect one stock chart at two intervals
+        run: python -m scripts.avanza_chart_probe
