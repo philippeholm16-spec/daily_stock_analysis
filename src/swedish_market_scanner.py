@@ -69,10 +69,20 @@ def evaluate(candidate: Candidate, *, capital_sek: float,
     unit_reward = candidate.target - candidate.entry - unit_cost
     fixed_cost = 2 * commission_sek_per_side
     risk_budget = capital_sek * 0.01
-    # Position sizing uses stop-loss exposure plus both commissions.
-    quantity = max(0, int((risk_budget - fixed_cost) // unit_risk))
-    if quantity == 0:
+    # Position sizing must meet BOTH the 1%-of-equity risk budget and the
+    # unleveraged cash budget. Entry capital includes entry commission plus
+    # conservative half-spread and one-sided slippage.
+    risk_quantity = max(0, int((risk_budget - fixed_cost) // unit_risk))
+    estimated_entry_cost = (candidate.entry + spread_sek_per_share / 2
+                            + slippage_sek_per_share_per_side)
+    cash_quantity = max(0, int((capital_sek - commission_sek_per_side)
+                               // estimated_entry_cost))
+    quantity = min(risk_quantity, cash_quantity)
+    if risk_quantity == 0:
         reasons.append("insufficient_risk_budget")
+    if cash_quantity == 0:
+        reasons.append("insufficient_cash")
+    if reasons:
         return Decision(False, tuple(reasons))
     risk = quantity * unit_risk + fixed_cost
     reward = quantity * unit_reward - fixed_cost
@@ -81,6 +91,6 @@ def evaluate(candidate: Candidate, *, capital_sek: float,
         reasons.append("risk_above_one_percent")
     if rr < 2:
         reasons.append("reward_to_risk_below_two")
-    if quantity * candidate.entry > capital_sek:
+    if quantity * estimated_entry_cost + commission_sek_per_side > capital_sek + 1e-9:
         reasons.append("insufficient_cash")
     return Decision(not reasons, tuple(reasons), quantity, risk, rr)
