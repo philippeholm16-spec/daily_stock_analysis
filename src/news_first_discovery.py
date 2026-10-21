@@ -13,11 +13,11 @@ from src.swedish_stock_news import NewsItem, link_news
 
 ISIN_RE = re.compile(r"^SE[A-Z0-9]{10}$")
 EVENT_WORDS = {
-    "report": ("rapport", "interim report", "quarterly", "bokslut"),
+    "report": ("rapport", "interim report", "quarterly", "bokslut", "rörelseresultat", "resultatet", "kvartalet", "delårsrapport"),
     "guidance": ("vinstvarning", "profit warning", "prognos", "guidance"),
     "order": ("stororder", "major order", "order värd", "order worth"),
     "corporate_action": ("uppköp", "takeover", "förvärv", "acquisition"),
-    "financing": ("nyemission", "rights issue", "finansiering"),
+    "financing": ("nyemission", "rights issue", "finansiering", "emission", "tar in kapital", "kapitalanskaffning", "fulltecknad"),
 }
 
 
