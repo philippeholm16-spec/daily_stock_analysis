@@ -10,6 +10,7 @@ from urllib.parse import urlsplit
 
 TRUSTED_ARTICLE_DOMAINS = frozenset({
     "placera.se", "www.placera.se", "view.news.eu.nasdaq.com",
+    "news.google.com",
 })
 
 
