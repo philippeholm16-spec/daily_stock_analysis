@@ -52,6 +52,6 @@ def test_missing_quote_rejected():
 
 
 def test_no_overspending():
-    d = evaluate(sample(entry=1000, last_price=1000, stop=990, target=1040),
+    d = evaluate(sample(entry=10000, last_price=10000, stop=9990, target=10040),
                  capital_sek=10000, now=NOW)
     assert not d.eligible and "insufficient_cash" in d.reasons
