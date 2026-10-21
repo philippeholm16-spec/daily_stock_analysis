@@ -10,6 +10,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from src.complete_market_coverage import audit_complete_xsto
 from src.avanza_mcp_adapter import parse_public_quote
 from scripts.avanza_mcp_bridge import unwrap, normalize_quote
 
@@ -67,6 +68,8 @@ async def collect(rows, delay_seconds):
                 listing = info.get("listing") or {}
                 if (info.get("isin") != row["isin"]
                         or listing.get("currency") != row["currency"]
+                        or listing.get("marketPlaceCode") != "XSTO"
+                        or listing.get("tickerSymbol") != row["symbol"]
                         or str(info.get("orderbookId")) != row["order_book_id"]):
                     raise ValueError("instrument_identity_mismatch")
                 quote_raw = unwrap(await client.call_tool("get_stock_quote", {
@@ -92,29 +95,45 @@ async def collect(rows, delay_seconds):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--manifest", type=Path, required=True)
+    p.add_argument("--reference", type=Path, required=True,
+                   help="independent, authorized complete XSTO reference JSON")
+    p.add_argument("--batch-start", type=int, default=0)
+    p.add_argument("--batch-size", type=int, default=25)
     p.add_argument("--output", type=Path, default=Path("avanza_universe_diagnostic.json"))
     p.add_argument("--delay-seconds", type=float, default=2.0)
     args = p.parse_args()
     if not 1 <= args.delay_seconds <= 60:
         p.error("delay-seconds must be between 1 and 60 to avoid rapid polling")
     doc, rows = load_manifest(args.manifest)
-    print(f"Requesting public Avanza quotes for {len(rows)} manifest entries (read-only)")
-    results = asyncio.run(collect(rows, args.delay_seconds))
+    reference = json.loads(args.reference.read_text(encoding="utf-8"))
+    if not isinstance(reference, dict):
+        p.error("independent reference must be a JSON object")
+    coverage = audit_complete_xsto(reference, doc)
+    if not coverage.complete:
+        p.error("complete market audit rejected the universe; see audit_stockholm_universe")
+    if not 0 <= args.batch_start < len(rows) or not 1 <= args.batch_size <= 25:
+        p.error("batch-start out of bounds or batch-size not 1..25")
+    chunk = rows[args.batch_start: args.batch_start + args.batch_size]
+    print(f"Requesting diagnostic quotes for {len(chunk)} of {len(rows)} verified references")
+    results = asyncio.run(collect(chunk, args.delay_seconds))
     accepted = sum(r["status"] == "DATA_ONLY_TIMESTAMP_UNVERIFIED" for r in results)
     report = {
         "source": "unofficial-avanza-mcp",
         "universe_source": doc["source"],
-        "universe_complete_independently_verified": False,
+        "universe_coverage_audit_passed": coverage.complete,
+        "all_quotes_collected": len(chunk) == len(rows),
+        "batch_start": args.batch_start,
+        "full_reference_count": len(rows),
         "as_of": datetime.now(timezone.utc).isoformat(),
-        "requested": len(rows),
+        "requested": len(chunk),
         "data_only": accepted,
-        "rejected": len(rows) - accepted,
+        "rejected": len(chunk) - accepted,
         "actionable": 0,
         "quotes": results,
     }
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
-    print(f"Received {accepted}/{len(rows)} diagnostic quotes; "
+    print(f"Received {accepted}/{len(chunk)} diagnostic quotes; "
           "0 actionable (timestamps and coverage unverified)")
 
 
