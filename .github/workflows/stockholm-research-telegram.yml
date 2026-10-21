@@ -36,8 +36,10 @@ jobs:
           python-version: '3.12'
       - name: Install public Avanza read-only tool
         run: python -m pip install 'git+https://github.com/AnteWall/avanza-mcp.git'
-      - name: Discover news candidates from Placera and free Google News RSS
-        run: python -m scripts.auto_news_research_probe --max-queries 10 --output auto_news_research.json
+      - name: Discover via news, assess independently with Stock Analyst Sweden
+        env:
+          STOCKHOLM_TRADING_CAPITAL_SEK: ${{ vars.STOCKHOLM_TRADING_CAPITAL_SEK || '15000' }}
+        run: python -m scripts.auto_news_research_probe --max-queries 10 --capital-sek "$STOCKHOLM_TRADING_CAPITAL_SEK" --output auto_news_research.json
       - name: Review every proposal and show dry-run digest
         run: python -m scripts.telegram_research_delivery --report auto_news_research.json
       - name: Send only when manually opted-in and reviewed
