@@ -58,8 +58,7 @@ def simulate_exit(analysis, future_bars, *, commission=1.0,
         }
     cost = quantity * (spread + 2 * slippage_per_side) + 2 * commission
     actual_risk = quantity * (entry_fill - stop) + cost
-    permitted_risk = (min(max_risk, capital_sek * 0.01) if capital_sek is None
-                      else capital_sek * 0.01)
+    permitted_risk = max_risk if capital_sek is None else capital_sek * 0.01
     if actual_risk <= 0 or actual_risk > permitted_risk + 1e-6:
         return {
             "outcome": "RISK_REJECTED_AT_ENTRY",
