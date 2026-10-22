@@ -183,3 +183,25 @@ def test_consensus_broker_count_or_negative_eps_rejected():
     late["consensus"] = 2.2
     late["contributors"] = 1
     assert earnings_consensus_revision(early, late, now=NOW)["revision_pct"] is None
+
+
+def test_wrong_isin_must_never_contaminate_same_named_stock():
+    entry = deepcopy(records()[0])
+    entry["broker_events"][0]["isin"] = "SE0021628898"
+    with pytest.raises(ValueError, match="revision_isin"):
+        evaluate_investment_readiness(entry, now=NOW)
+
+
+def test_mixed_currency_within_one_broker_revision_is_rejected():
+    record = deepcopy(records()[2]["broker_events"][0])
+    record["new_currency"] = "USD"
+    with pytest.raises(ValueError, match="cross_currency"):
+        target_revision_momentum([record], symbol="ABB", now=NOW)
+
+
+def test_two_different_broker_targets_same_datetime_is_not_silently_deduplicated():
+    a = deepcopy(records()[1]["broker_events"][0])
+    b = deepcopy(a)
+    b["new"] = 320
+    with pytest.raises(ValueError, match="conflicting_same_day"):
+        target_revision_momentum([a, b], symbol="SKF B", now=NOW)
