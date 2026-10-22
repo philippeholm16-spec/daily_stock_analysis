@@ -27,6 +27,7 @@ from src.ibkr_tws_quote_adapter import (
     build_ibkr_tws_snapshot, instrument_from_ibkr_contract
 )
 from src.stockholm_realtime_quality import evaluate_primary_live_quote
+from src.ibkr_exchange_provenance import verify_direct_primary_book
 
 
 def _iso():
@@ -70,6 +71,10 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             self.errors = []
             self.subscription_started = False
             self.not_halted = None
+            self.smart_components = []
+            self.smart_map_requested = False
+            self.bid_exchange_codes = None
+            self.ask_exchange_codes = None
             self.finished = threading.Event()
             self.lock = threading.Lock()
 
@@ -113,6 +118,35 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             if reqId == 601:
                 with self.lock:
                     self.market_type = marketDataType
+
+        def tickReqParams(self, tickerId, minTick, bboExchange, snapshotPermissions):
+            if tickerId != 601 or not isinstance(bboExchange, str) or not bboExchange:
+                return
+            with self.lock:
+                should_request = not self.smart_map_requested
+                if should_request:
+                    self.smart_map_requested = True
+            if should_request:
+                self.reqSmartComponents(701, bboExchange)
+
+        def smartComponents(self, reqId, components):
+            if reqId != 701:
+                return
+            with self.lock:
+                self.smart_components = [
+                    {"letter": getattr(part, "exchangeLetter", None),
+                     "exchange": getattr(part, "exchange", None)}
+                    for part in components
+                ]
+
+        def tickString(self, reqId, tickType, value):
+            if reqId != 601:
+                return
+            with self.lock:
+                if tickType == 32:
+                    self.bid_exchange_codes = value
+                elif tickType == 33:
+                    self.ask_exchange_codes = value
 
         def tickGeneric(self, reqId, tickType, value):
             if reqId == 601 and tickType == 49:
@@ -167,6 +201,13 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             matches = list(client.contract_matches)
             isin_confirmed = client.isin_confirmed
             not_halted = client.not_halted
+            bid_exchange_codes = client.bid_exchange_codes
+            ask_exchange_codes = client.ask_exchange_codes
+            smart_components = list(client.smart_components)
+        venue_proof = verify_direct_primary_book(
+            bid_exchange_codes, ask_exchange_codes, smart_components,
+            expected_provider_exchange=exchange_code
+        )
         info = {
             "provider": "IBKR_TWS_API",
             "requested_conid": conid,
@@ -178,6 +219,8 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             "operator_exchange_map_confirmed": exchange_map_verified,
             "subscription_confirmed": live_entitlement_confirmed,
             "provider_halt_status_observed": not_halted is not None,
+            "venue_proof": venue_proof.reason,
+            "bid_and_ask_primary_venue_observed": venue_proof.verified,
             "bot_analytics_rights_confirmed": bot_rights_confirmed,
             "errors": sorted(set(client.errors)),
             "live_primary_quote_verified": False,
@@ -197,8 +240,10 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                     "nordic_l1_active": live_entitlement_confirmed,
                     "bot_analytics_rights_approved": bot_rights_confirmed,
                     "authenticated": True,
-                    "direct_book_exchange": exchange_code,
+                    "direct_book_exchange": (venue_proof.bid_exchange
+                                             if venue_proof.verified else None),
                     "exchange_mapping_verified": exchange_map_verified,
+                    "book_venue_proof_observed": venue_proof.verified,
                     "market_phase": ("CONTINUOUS" if not_halted is True
                                      else "UNKNOWN_OR_HALTED"),
                 }
