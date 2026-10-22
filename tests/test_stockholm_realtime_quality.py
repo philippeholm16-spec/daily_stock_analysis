@@ -22,6 +22,7 @@ SESSION = {
     "marketDataType": 1, "nordic_l1_active": True,
     "bot_analytics_rights_approved": True, "authenticated": True,
     "direct_book_exchange": "SFB", "exchange_mapping_verified": True,
+    "book_venue_proof_observed": True,
     "market_phase": "CONTINUOUS"
 }
 EXCHANGE_MAP = {"SFB": "XSTO", "CBOE": "CHIX"}
@@ -159,3 +160,17 @@ def test_provider_must_be_ibkr_realtime_authenticated_not_unofficial_avanza():
     snap, ident = live()
     snap["provider"] = "UNOFFICIAL_AVANZA_MCP"
     assert not evaluate_primary_live_quote(snap, ident, now=NOW).accepted_as_primary_live
+
+
+def test_direct_book_venue_cannot_be_fabricated_from_contract():
+    session = deepcopy(SESSION)
+    session["book_venue_proof_observed"] = False
+    quote = build_ibkr_tws_snapshot(
+        CONTRACT, TRADE, BOOK, session,
+        received_at=NOW, confirmed_exchange_map=EXCHANGE_MAP
+    )
+    gate = evaluate_primary_live_quote(
+        quote, instrument_from_ibkr_contract(CONTRACT), now=NOW
+    )
+    assert not gate.accepted_as_primary_live
+    assert "nonprimary_or_unverified_venue" in gate.reasons
