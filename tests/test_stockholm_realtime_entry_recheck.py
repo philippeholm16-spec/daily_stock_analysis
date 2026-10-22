@@ -36,6 +36,7 @@ def research(*, chart_minutes=5):
         "opportunity_grade": "VERY_GOOD", "score": 90,
         "entry_price": 100, "lowest_sell_point": 98, "sell_point": 106,
         "chart_as_of": (NOW-timedelta(minutes=chart_minutes)).isoformat(),
+        "observed_turnover_proxy_sek": 12_000_000,
         "source_news_opinion_used": False, "actionable": False,
     }
 
@@ -100,3 +101,12 @@ def test_unapproved_stock_analyst_grade_cannot_be_repriced():
         data, gate, isin=ISIN, symbol=SYM, now=NOW
     )
     assert result["status"] == "LIVE_SETUP_REJECTED"
+
+
+def test_missing_observed_turnover_never_gets_replaced_by_assumption():
+    gate = verified_quote()
+    analysis = research()
+    analysis.pop("observed_turnover_proxy_sek")
+    output = reprice_with_live_quote(analysis, gate, isin=ISIN, symbol=SYM, now=NOW)
+    assert output["status"] == "LIVE_SETUP_REJECTED"
+    assert "missing_or_low_observed_liquidity" in output["reasons"]
