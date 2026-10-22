@@ -29,7 +29,10 @@
           "old": 44.5,
           "new": 45.5,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs",
+          "isin": "SE0000163628",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "EKTA B",
@@ -40,7 +43,10 @@
           "old": 59,
           "new": 60,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs",
+          "isin": "SE0000163628",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "EKTA B",
@@ -51,7 +57,10 @@
           "old": 65,
           "new": 68,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs",
+          "isin": "SE0000163628",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "EKTA B",
@@ -62,7 +71,10 @@
           "old": 65,
           "new": 63,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs",
+          "isin": "SE0000163628",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "EKTA B",
@@ -73,7 +85,10 @@
           "old": 58,
           "new": 57,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs",
+          "isin": "SE0000163628",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "EKTA B",
@@ -84,7 +99,10 @@
           "old": 55,
           "new": 50,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs",
+          "isin": "SE0000163628",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "EKTA B",
@@ -95,7 +113,10 @@
           "old": 100,
           "new": 80,
           "currency": "SEK",
-          "source": "https://global.morningstar.com/sv/aktier/stockholmsbrsen-r-vervrderad-bara-en-aktie-r-undervrderad"
+          "source": "https://global.morningstar.com/sv/aktier/stockholmsbrsen-r-vervrderad-bara-en-aktie-r-undervrderad",
+          "isin": "SE0000163628",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         }
       ],
       "notes": "Mixed broker revisions; Morningstar separately lowered its DCF fair-value estimate by 20%. High FI-reported short interest. EPS consensus change not established."
@@ -121,7 +142,10 @@
           "old": 270,
           "new": 275,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -132,7 +156,10 @@
           "old": 251,
           "new": 285,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -143,7 +170,10 @@
           "old": 290,
           "new": 310,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -154,7 +184,10 @@
           "old": 290,
           "new": 315,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -165,7 +198,10 @@
           "old": 270,
           "new": 280,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -176,7 +212,10 @@
           "old": 315,
           "new": 325,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -187,7 +226,10 @@
           "old": 229,
           "new": 226,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -198,7 +240,10 @@
           "old": 265,
           "new": 280,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -209,7 +254,10 @@
           "old": 305,
           "new": 315,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -220,7 +268,10 @@
           "old": 290,
           "new": 300,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -231,7 +282,10 @@
           "old": 250,
           "new": 260,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -242,7 +296,10 @@
           "old": 230,
           "new": 245,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "SKF B",
@@ -253,7 +310,10 @@
           "old": 250,
           "new": 270,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs",
+          "isin": "SE0000108227",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         }
       ],
       "notes": "Broker revisions predominantly up; earnings consensus change not verified, short interest is material."
@@ -275,7 +335,10 @@
           "old": 1025,
           "new": 1000,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/abb"
+          "source": "https://www.borskollen.se/aktie/abb",
+          "isin": "CH0012221716",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "ABB",
@@ -286,7 +349,10 @@
           "old": 1150,
           "new": 1100,
           "currency": "SEK",
-          "source": "https://www.borskollen.se/aktie/abb"
+          "source": "https://www.borskollen.se/aktie/abb",
+          "isin": "CH0012221716",
+          "old_currency": "SEK",
+          "new_currency": "SEK"
         },
         {
           "symbol": "ABB",
@@ -297,7 +363,10 @@
           "old": 105,
           "new": 94,
           "currency": "USD",
-          "source": "https://www.borskollen.se/aktie/abb"
+          "source": "https://www.borskollen.se/aktie/abb",
+          "isin": "CH0012221716",
+          "old_currency": "USD",
+          "new_currency": "USD"
         }
       ],
       "notes": "Three after-Q3 target cuts despite an ABG recommendation upgrade. Swedish FI short interest currently NOT verified; old reported values must not be treated as zero."
