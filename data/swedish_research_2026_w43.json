@@ -1,0 +1,340 @@
+{
+  "schema_version": "1.0",
+  "basis": "MANUELL_PRELIMINAR_VECKORANKNING_EJ_KOPSIGNAL",
+  "week": "2026-W43",
+  "date": "2026-10-22",
+  "method": "value 30 + fundamentals 25 + catalyst 15 + entry 20 + downside 10",
+  "market_data_note": "Prices are October 21 reference closes, NOT XSTO real-time quotes; risk/stop/targets NOT verified",
+  "coverage": "7 named Swedish shares researched; not the complete exchange",
+  "candidates": [
+    {
+      "symbol": "SKF B",
+      "mic": "XSTO",
+      "reference_price_sek": 269.5,
+      "price_as_of": "2026-10-21T17:30:00+02:00",
+      "reviewed_at": "2026-10-22T09:00:00+02:00",
+      "analyst_note": "Rapportreaktion och bekräftad planerad Vertevo-avknoppning; invänta verifierad vändning i priset.",
+      "factors": {
+        "valuation": {
+          "points": 20,
+          "explanation": "Rimlig möjlig omvärdering, men aktien är inte självklart lågt prissatt på en vanlig vinstmultipel.",
+          "sources": [
+            "https://stockanalysis.com/quote/sto/SKF.B/history/",
+            "https://www.mfn.se/cis/a/skf/skf-q3-2026-improved-margin-and-selectively-higher-demand-033ff65f"
+          ]
+        },
+        "fundamentals": {
+          "points": 21,
+          "explanation": "Organisk försäljning +4,3 procent och justerad rörelsemarginal 16,3 procent i Q3 2026.",
+          "sources": [
+            "https://www.mfn.se/cis/a/skf/skf-q3-2026-improved-margin-and-selectively-higher-demand-033ff65f"
+          ]
+        },
+        "catalyst": {
+          "points": 13,
+          "explanation": "SKF Vertevo planeras noteras den 1 december 2026 efter stämmobeslut.",
+          "sources": [
+            "https://www.skf.com/ph/investors/skf-as-an-investment/separation-of-automotive"
+          ]
+        },
+        "entry_timing": {
+          "points": 15,
+          "explanation": "Kursen stängde cirka 269,50 kr efter volatil rapportdag; 261,90 kr var dagslägsta.",
+          "sources": [
+            "https://stockanalysis.com/quote/sto/SKF.B/history/"
+          ]
+        },
+        "downside_control": {
+          "points": 7,
+          "explanation": "Starkt industribolag men cyklisk efterfrågan och kvarstående värderingsrisk.",
+          "sources": [
+            "https://www.mfn.se/cis/a/skf/skf-q3-2026-improved-margin-and-selectively-higher-demand-033ff65f",
+            "https://stockanalysis.com/quote/sto/SKF.B/history/"
+          ]
+        }
+      }
+    },
+    {
+      "symbol": "ABB",
+      "mic": "XSTO",
+      "reference_price_sek": 860.6,
+      "price_as_of": "2026-10-21T17:30:00+02:00",
+      "reviewed_at": "2026-10-22T09:00:00+02:00",
+      "analyst_note": "Hög kvalitet och rapportdriven kursnedgång, men relativt hög vinstmultipel hindrar värdefyndsstämpel.",
+      "factors": {
+        "valuation": {
+          "points": 17,
+          "explanation": "P/E omkring 31 till 33 på senaste vinsten gör ABB inte till ett typiskt lågprisbolag trots nedgången.",
+          "sources": [
+            "https://finance.yahoo.com/quote/ABB.ST/",
+            "https://stockanalysis.com/quote/sto/ABB/"
+          ]
+        },
+        "fundamentals": {
+          "points": 24,
+          "explanation": "Q3 visar +40 procent orderingång, +14 procent omsättning och +24 procent operativt EBITA.",
+          "sources": [
+            "https://www.abb.com/global/en/news/139696/q3-2026-results"
+          ]
+        },
+        "catalyst": {
+          "points": 14,
+          "explanation": "Elektrifiering och datacenterorderingång fortsatt stark; positiva revideringar möjliga men ingen garanti.",
+          "sources": [
+            "https://www.abb.com/global/en/news/139696/q3-2026-results",
+            "https://www.reuters.com/technology/abb-says-data-centre-business-booming-q3-figures-line-with-forecasts-2026-10-20/"
+          ]
+        },
+        "entry_timing": {
+          "points": 13,
+          "explanation": "Rapportdagen gav minus 4,9 procent och kursen har backat från över 960 kronor till omkring 860 kronor.",
+          "sources": [
+            "https://finance.yahoo.com/quote/ABB.ST/",
+            "https://stockanalysis.com/quote/sto/ABB/history/"
+          ]
+        },
+        "downside_control": {
+          "points": 6,
+          "explanation": "Hög värdering och osäkerhet kring AI-datacenters kapitalkostnader kan pressa multipeln ytterligare.",
+          "sources": [
+            "https://www.reuters.com/technology/abb-says-data-centre-business-booming-q3-figures-line-with-forecasts-2026-10-20/",
+            "https://finance.yahoo.com/quote/ABB.ST/"
+          ]
+        }
+      }
+    },
+    {
+      "symbol": "EKTA B",
+      "mic": "XSTO",
+      "reference_price_sek": 55.75,
+      "price_as_of": "2026-10-21T17:30:00+02:00",
+      "reviewed_at": "2026-10-22T09:00:00+02:00",
+      "analyst_note": "Störst uppskattad värderingsrabatt, men vändningen ännu inte bevisad på omsättningsnivå.",
+      "factors": {
+        "valuation": {
+          "points": 27,
+          "explanation": "Morningstar uppskattar 80 kr i verkligt värde; efter ca 55,75 kr är teoretisk uppsida drygt 43 procent.",
+          "sources": [
+            "https://global.morningstar.com/sv/aktier/stockholmsbrsen-r-vervrderad-bara-en-aktie-r-undervrderad",
+            "https://se.investing.com/equities/elekta-historical-data"
+          ]
+        },
+        "fundamentals": {
+          "points": 13,
+          "explanation": "Justerad EBIT-marginal steg till 11,2 procent men jämförbar nettoomsättning minskade med 2 procent.",
+          "sources": [
+            "https://ir.elekta.com/sv/investerare/pressmeddelanden/2026/forsta-kvartalet-majjuli-202627/"
+          ]
+        },
+        "catalyst": {
+          "points": 11,
+          "explanation": "Elekta Evo och tre kvartal med stigande orderingång kan hjälpa men region Kina är svag.",
+          "sources": [
+            "https://ir.elekta.com/sv/investerare/pressmeddelanden/2026/forsta-kvartalet-majjuli-202627/"
+          ]
+        },
+        "entry_timing": {
+          "points": 13,
+          "explanation": "Aktien stängde omkring 55,75 kronor den 21 oktober efter flera ryckiga handelsdagar.",
+          "sources": [
+            "https://se.investing.com/equities/elekta-historical-data"
+          ]
+        },
+        "downside_control": {
+          "points": 5,
+          "explanation": "Vändningsrisken är betydande: lägre omsättning, svag Kina-marknad och osäker marknadsandel.",
+          "sources": [
+            "https://ir.elekta.com/sv/investerare/pressmeddelanden/2026/forsta-kvartalet-majjuli-202627/",
+            "https://global.morningstar.com/sv/aktier/stockholmsbrsen-r-vervrderad-bara-en-aktie-r-undervrderad"
+          ]
+        }
+      }
+    },
+    {
+      "symbol": "SKA B",
+      "mic": "XSTO",
+      "reference_price_sek": 271.7,
+      "price_as_of": "2026-10-21T17:30:00+02:00",
+      "reviewed_at": "2026-10-22T09:00:00+02:00",
+      "analyst_note": "Fastighets- och byggrelaterad återhämtning kan ge omvärdering, men Q3-rapport återstår.",
+      "factors": {
+        "valuation": {
+          "points": 22,
+          "explanation": "SEB:s tidigare sum-of-the-parts-estimat kring 340 kr antyder rabatt men bygger på antaganden.",
+          "sources": [
+            "https://efn.se/efter-skanskas-mandagsras-storbanken-vander-till-kop",
+            "https://se.investing.com/equities/skanska-b-historical-data"
+          ]
+        },
+        "fundamentals": {
+          "points": 17,
+          "explanation": "Skanskas globala byggverksamhet är etablerad men kommersiell fastighetsutveckling pressar helheten.",
+          "sources": [
+            "https://efn.se/efter-skanskas-mandagsras-storbanken-vander-till-kop"
+          ]
+        },
+        "catalyst": {
+          "points": 11,
+          "explanation": "Q3-rapport publiceras den 5 november och kan ge ny information om orderingång.",
+          "sources": [
+            "https://www.skanska.com/group/sv/investerare/finansiella-rapporter/kalender/delarsrapport-tredje-kvartalet-2026",
+            "https://efn.se/efter-skanskas-mandagsras-storbanken-vander-till-kop"
+          ]
+        },
+        "entry_timing": {
+          "points": 14,
+          "explanation": "Kursen kring 271,70 kronor är lägre än nivåerna kring 280 tidigare i september.",
+          "sources": [
+            "https://se.investing.com/equities/skanska-b-historical-data"
+          ]
+        },
+        "downside_control": {
+          "points": 6,
+          "explanation": "Fastighetsnedskrivningar, räntor och byggcykel begränsar säkerheten i värderingen.",
+          "sources": [
+            "https://efn.se/efter-skanskas-mandagsras-storbanken-vander-till-kop"
+          ]
+        }
+      }
+    },
+    {
+      "symbol": "ERIC B",
+      "mic": "XSTO",
+      "reference_price_sek": 102.9,
+      "price_as_of": "2026-10-21T17:30:00+02:00",
+      "reviewed_at": "2026-10-22T09:00:00+02:00",
+      "analyst_note": "Bättre organisk tillväxt, men senaste rapportens kassaflöde och resultat kräver normalisering.",
+      "factors": {
+        "valuation": {
+          "points": 16,
+          "explanation": "Ingen stor verifierad rabatt i aktuella modeller; nivå omkring 103 kr efter rapportuppgång.",
+          "sources": [
+            "https://se.investing.com/equities/ericsson-b-historical-data"
+          ]
+        },
+        "fundamentals": {
+          "points": 18,
+          "explanation": "Q3 visar +7 procent organisk försäljningstillväxt men lägre brutto- och kassaflödesmått.",
+          "sources": [
+            "https://www.ericsson.com/sv/press-releases/2026/10/ericsson-reports-third-quarter-results-2026"
+          ]
+        },
+        "catalyst": {
+          "points": 11,
+          "explanation": "Nätmodernisering och effektivisering kan förbättra lönsamhet över tid.",
+          "sources": [
+            "https://www.ericsson.com/sv/press-releases/2026/10/ericsson-reports-third-quarter-results-2026"
+          ]
+        },
+        "entry_timing": {
+          "points": 10,
+          "explanation": "Aktien steg mycket på rapportdagen och stängde den 21 oktober kring 102,90 kr.",
+          "sources": [
+            "https://se.investing.com/equities/ericsson-b-historical-data"
+          ]
+        },
+        "downside_control": {
+          "points": 6,
+          "explanation": "Telekomcykel, engångseffekter och avtagande kassaflöde kräver försiktighet.",
+          "sources": [
+            "https://www.ericsson.com/sv/press-releases/2026/10/ericsson-reports-third-quarter-results-2026"
+          ]
+        }
+      }
+    },
+    {
+      "symbol": "ESSITY B",
+      "mic": "XSTO",
+      "reference_price_sek": 276.5,
+      "price_as_of": "2026-10-21T17:30:00+02:00",
+      "reviewed_at": "2026-10-22T09:00:00+02:00",
+      "analyst_note": "Defensiv sektor, men dagens marginalfall gör timing osäkrare trots något bättre än väntat resultat.",
+      "factors": {
+        "valuation": {
+          "points": 19,
+          "explanation": "Tidigare externa värderingar antydde viss rabatt, men aktuell rabatt måste uppdateras efter Q3.",
+          "sources": [
+            "https://www.marketscreener.com/news/essity-report-q32026-report-eng-ce785cd9de88f720",
+            "https://global.morningstar.com/sv/aktier/stockholmsbrsen-r-vervrderad-bara-en-aktie-r-undervrderad"
+          ]
+        },
+        "fundamentals": {
+          "points": 14,
+          "explanation": "Försäljning +4,1 procent medan organisk tillväxt minus 0,3 och justerad EBITA-marginal faller.",
+          "sources": [
+            "https://www.marketscreener.com/news/essity-report-q32026-report-eng-ce785cd9de88f720"
+          ]
+        },
+        "catalyst": {
+          "points": 8,
+          "explanation": "Förvärv och framtida prisjusteringar kan hjälpa, men ingenting i färska rapporten bevisar turnaround.",
+          "sources": [
+            "https://www.marketscreener.com/news/essity-report-q32026-report-eng-ce785cd9de88f720"
+          ]
+        },
+        "entry_timing": {
+          "points": 11,
+          "explanation": "Referenskurs 276,50 kr är före rapportsvaret 22 oktober; köp kräver ny prisobservation.",
+          "sources": [
+            "https://se.investing.com/equities/essity-ab-b-historical-data",
+            "https://www.marketscreener.com/news/essity-report-q32026-report-eng-ce785cd9de88f720"
+          ]
+        },
+        "downside_control": {
+          "points": 7,
+          "explanation": "Dagligvarunära produktsegment, men marginalpress och svag organisk tillväxt innebär risk.",
+          "sources": [
+            "https://www.marketscreener.com/news/essity-report-q32026-report-eng-ce785cd9de88f720"
+          ]
+        }
+      }
+    },
+    {
+      "symbol": "EVO",
+      "mic": "XSTO",
+      "reference_price_sek": 811,
+      "price_as_of": "2026-10-21T17:30:00+02:00",
+      "reviewed_at": "2026-10-22T09:00:00+02:00",
+      "analyst_note": "Låg multipel men dag-före-rapport och tydlig regulatorisk risk; ingen prioriterad affär ännu.",
+      "factors": {
+        "valuation": {
+          "points": 21,
+          "explanation": "Förväntad P/E 2026 omkring 13,6 gånger ser lågt ut men marknaden diskonterar strukturell risk.",
+          "sources": [
+            "https://www.investing.com/equities/evolution-gaming-group"
+          ]
+        },
+        "fundamentals": {
+          "points": 15,
+          "explanation": "Höga marginaler och kassagenerering men tidigare kvartal visade begränsad försäljningstillväxt.",
+          "sources": [
+            "https://www.investing.com/equities/evolution-gaming-group"
+          ]
+        },
+        "catalyst": {
+          "points": 8,
+          "explanation": "Q3-rapport den 23 oktober är en binär katalysator och bör inte användas som säkert köpskäl.",
+          "sources": [
+            "https://se.marketscreener.com/kurs/aktie/EVOLUTION-AB-58808466/kalender/"
+          ]
+        },
+        "entry_timing": {
+          "points": 6,
+          "explanation": "Referenskurs omkring 811 kr dag före rapport; gaprisk hög och tekniskt köpläge saknar verifiering.",
+          "sources": [
+            "https://se.investing.com/equities/evolution-gaming-group-historical-data",
+            "https://se.marketscreener.com/kurs/aktie/EVOLUTION-AB-58808466/kalender/"
+          ]
+        },
+        "downside_control": {
+          "points": 3,
+          "explanation": "Regulatorisk osäkerhet, rapportgap och vinstberoende av spelmarknader begränsar säkerhetsmarginalen.",
+          "sources": [
+            "https://www.investing.com/equities/evolution-gaming-group",
+            "https://se.marketscreener.com/kurs/aktie/EVOLUTION-AB-58808466/kalender/"
+          ]
+        }
+      }
+    }
+  ]
+}
