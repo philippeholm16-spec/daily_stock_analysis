@@ -63,7 +63,8 @@ def test_gap_below_stop_can_exceed_planned_risk():
     }
     replay = simulate_exit(
         analysis,
-        [{"open": 95, "high": 103, "low": 94, "close": 100}],
+        [{"open": 100, "high": 101, "low": 99, "close": 100},
+         {"open": 95, "high": 103, "low": 94, "close": 100}],
     )
     assert replay["outcome"] == "STOP_GAP"
     assert replay["exit_price"] == 95
