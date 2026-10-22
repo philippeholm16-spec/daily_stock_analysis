@@ -1,4 +1,4 @@
-# Stock Analyst: Fundamental veckorankning – 2026-W43 (22 oktober 2026)
+> **ARKIVERAT / ERSATT SOM KOPRANKNING 22 OKTOBER 2026**: Den manuella 100-poangslistan nedan saknade samlad broker-riktkursmomentum, fulla vinstestimatrevideringar och systematisk FI-blankningsgranskning. De angivna poangen kan enbart anvandas som historiska undersokningsnoteringar, inte som vardering av dagens koplage. Anvand `docs/stockholm_revision_first_due_diligence_2026_w43.md` och `scripts/weekly_revision_audit.py` for den uppdaterade forskningsbedomningen. Inga affarssignaler ar aktiva.\n\n# Stock Analyst: Fundamental veckorankning – 2026-W43 (22 oktober 2026)
 
 Detta är ett separat **manuellt forskningsbetyg** för ett urval av sju
 Nasdaq Stockholm-aktier, inte den tidigare tekniska Stock Analyst-analysen
