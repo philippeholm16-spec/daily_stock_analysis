@@ -32,6 +32,7 @@ def verified_quote(*, type_id=1, ask=100.05):
 
 def research(*, chart_minutes=5):
     return {
+        "isin": ISIN, "symbol": SYM,
         "status": "ANALYZED_INDICATIVE_SETUP",
         "opportunity_grade": "VERY_GOOD", "score": 90,
         "entry_price": 100, "lowest_sell_point": 98, "sell_point": 106,
@@ -110,3 +111,12 @@ def test_missing_observed_turnover_never_gets_replaced_by_assumption():
     output = reprice_with_live_quote(analysis, gate, isin=ISIN, symbol=SYM, now=NOW)
     assert output["status"] == "LIVE_SETUP_REJECTED"
     assert "missing_or_low_observed_liquidity" in output["reasons"]
+
+
+def test_analyst_share_class_mismatch_blocks_reprice():
+    gate = verified_quote()
+    analysis = research()
+    analysis["isin"] = "SE0021628898"
+    output = reprice_with_live_quote(analysis, gate, isin=ISIN, symbol=SYM, now=NOW)
+    assert output["status"] == "LIVE_SETUP_REJECTED"
+    assert "analysis_share_class_does_not_match_live_quote" in output["reasons"]
