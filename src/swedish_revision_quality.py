@@ -21,11 +21,17 @@ def _timestamp(value):
     if not isinstance(value, str):
         raise ValueError("missing_time")
     try:
-        ts = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if len(value) == 10 and value[4] == "-" and value[7] == "-":
+            # Published articles frequently provide dates, not times.
+            # Interpret date as midnight UTC for age checks only; never
+            # present that as an observed intraday publication timestamp.
+            ts = datetime.fromisoformat(value).replace(tzinfo=timezone.utc)
+        else:
+            ts = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            if ts.tzinfo is None:
+                raise ValueError("timezone_required")
     except ValueError as exc:
         raise ValueError("invalid_time") from exc
-    if ts.tzinfo is None:
-        raise ValueError("timezone_required")
     return ts.astimezone(timezone.utc)
 
 
