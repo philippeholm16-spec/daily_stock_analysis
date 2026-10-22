@@ -8,6 +8,7 @@ from src.stockholm_live_alert import build_live_alert
 
 NOW = datetime(2026, 10, 22, 7, 30, 0, tzinfo=timezone.utc)
 INSTRUMENT = {"isin": "SE0000115446", "symbol": "VOLV B", "mic": "XSTO",
+              "listing_mic": "XSTO",
               "contract_id": 1234567}
 
 
