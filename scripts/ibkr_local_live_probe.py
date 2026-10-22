@@ -28,6 +28,7 @@ from src.ibkr_tws_quote_adapter import (
 )
 from src.stockholm_realtime_quality import evaluate_primary_live_quote
 from src.ibkr_exchange_provenance import verify_direct_primary_book
+from src.stockholm_live_alert import build_live_alert
 
 
 def _iso():
@@ -37,7 +38,8 @@ def _iso():
 def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                     client_id=77, duration_seconds=50,
                     exchange_map_verified=False, bot_rights_confirmed=False,
-                    live_entitlement_confirmed=False):
+                    live_entitlement_confirmed=False,
+                    analyst_result=None, capital_sek=15000):
     """One exact contract only. External ibapi installed by the user."""
     if (not isinstance(conid, int) or conid <= 0
             or not isinstance(isin, str) or len(isin) != 12
@@ -272,6 +274,13 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                 if gate.accepted_as_primary_live:
                     # Never expose entitlement tokens or full quote payloads.
                     info["quote_age_status"] = "provider_live_xsto"
+                    if analyst_result is not None:
+                        preview = build_live_alert(
+                            {"isin": isin, "symbol": symbol, "mic": "XSTO"},
+                            analyst_result, gate, now=_iso(),
+                            capital_sek=capital_sek
+                        )
+                        info["stock_analyst_preview"] = preview
         return info
     finally:
         if client.subscription_started:
@@ -293,6 +302,9 @@ def main():
     parser.add_argument("--port", type=int, default=7497)
     parser.add_argument("--client-id", type=int, default=77)
     parser.add_argument("--duration", type=int, default=50)
+    parser.add_argument("--analysis-file", type=Path, default=None,
+                        help="Optional local Stock Analyst technical JSON; dry-run only")
+    parser.add_argument("--capital-sek", type=int, default=15000)
     parser.add_argument("--confirm-exchange-map", action="store_true",
                         help="Only when independently validated against IBKR primary venue")
     parser.add_argument("--confirm-bot-analytics-rights", action="store_true",
@@ -300,13 +312,19 @@ def main():
     parser.add_argument("--confirm-live-entitlement", action="store_true",
                         help="Only after confirmed active Nordic Equity L1 subscription")
     args = parser.parse_args()
+    analysis = None
+    if args.analysis_file is not None:
+        analysis = json.loads(args.analysis_file.read_text(encoding="utf-8"))
+        if not isinstance(analysis, dict):
+            parser.error("--analysis-file must contain one Stock Analyst JSON object")
     report = run_local_probe(
         conid=args.conid, isin=args.isin, symbol=args.symbol,
         exchange_code=args.exchange_code, port=args.port,
         client_id=args.client_id, duration_seconds=args.duration,
         exchange_map_verified=args.confirm_exchange_map,
         bot_rights_confirmed=args.confirm_bot_analytics_rights,
-        live_entitlement_confirmed=args.confirm_live_entitlement
+        live_entitlement_confirmed=args.confirm_live_entitlement,
+        analyst_result=analysis, capital_sek=args.capital_sek
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
