@@ -29,6 +29,7 @@ from src.ibkr_tws_quote_adapter import (
 from src.stockholm_realtime_quality import evaluate_primary_live_quote
 from src.ibkr_exchange_provenance import verify_direct_primary_book
 from src.stockholm_live_alert import build_live_alert
+from src.ibkr_contract_identity import verify_contract_details
 
 
 def _iso():
@@ -89,9 +90,10 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
         def contractDetails(self, reqId, details):
             if reqId != 501 or details.contract.conId != conid:
                 return
-            sec_id_list = getattr(details, "secIdList", None) or []
-            tags = {getattr(x, "tag", ""): getattr(x, "value", "")
-                    for x in sec_id_list}
+            # Modern IBKR secIdList uses key/value, older builds tag/value.
+            # Only an exact contractDetails ISIN/stock/currency/conId match passes.
+            confirmed_identity = verify_contract_details(
+                details, expected_isin=isin, expected_conid=conid)
             with self.lock:
                 self.contract_matches.append({
                     "conid": details.contract.conId,
@@ -99,7 +101,7 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                     "primaryExchange": getattr(details.contract, "primaryExchange", None),
                     "validExchanges": getattr(details, "validExchanges", ""),
                 })
-                if tags.get("ISIN") == isin:
+                if confirmed_identity is not None:
                     self.isin_confirmed = True
 
         def contractDetailsEnd(self, reqId):
