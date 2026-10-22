@@ -30,6 +30,7 @@ def raw_quote(*, market_type=1, ask=100.05):
 
 def grade():
     return {
+        "isin": INSTRUMENT["isin"], "symbol": INSTRUMENT["symbol"],
         "status": "ANALYZED_INDICATIVE_SETUP", "opportunity_grade": "VERY_GOOD",
         "score": 90, "entry_price": 100, "lowest_sell_point": 98,
         "sell_point": 106,
@@ -112,3 +113,11 @@ def test_invalid_identity_blocks_telegram():
     incorrect["isin"] = "SE0021628898"
     assert not build_live_alert(incorrect, grade(), quality(), now=NOW)[
         "ready_for_preview"]
+
+
+def test_analyst_levels_from_different_stock_never_create_alert():
+    analyst = grade()
+    analyst["symbol"] = "VOLCAR B"
+    report = build_live_alert(INSTRUMENT, analyst, quality(), now=NOW)
+    assert not report["ready_for_preview"]
+    assert report["reason"] == "analysis_share_class_does_not_match_live_quote"
