@@ -30,6 +30,7 @@ from src.stockholm_realtime_quality import evaluate_primary_live_quote
 from src.ibkr_exchange_provenance import verify_direct_primary_book
 from src.stockholm_live_alert import build_live_alert
 from src.ibkr_contract_identity import verify_contract_details
+from src.ibkr_book_corroboration import verify_streaming_book
 
 
 def _iso():
@@ -80,6 +81,13 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             self.smart_map_requested = False
             self.bid_exchange_codes = None
             self.ask_exchange_codes = None
+            self.stream_bid = None
+            self.stream_ask = None
+            self.stream_bid_at = None
+            self.stream_ask_at = None
+            self.bid_exchange_at = None
+            self.ask_exchange_at = None
+            self.min_tick = None
             self.finished = threading.Event()
             self.lock = threading.Lock()
 
@@ -131,6 +139,7 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             if tickerId != 601 or not isinstance(bboExchange, str) or not bboExchange:
                 return
             with self.lock:
+                self.min_tick = minTick
                 should_request = not self.smart_map_requested
                 if should_request:
                     self.smart_map_requested = True
@@ -147,14 +156,27 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                     for part in components
                 ]
 
+        def tickPrice(self, reqId, tickType, price, attrib):
+            if reqId != 601 or not isinstance(price, (int, float)) or price <= 0:
+                return
+            with self.lock:
+                if tickType == 1:
+                    self.stream_bid = float(price)
+                    self.stream_bid_at = time.monotonic()
+                elif tickType == 2:
+                    self.stream_ask = float(price)
+                    self.stream_ask_at = time.monotonic()
+
         def tickString(self, reqId, tickType, value):
             if reqId != 601:
                 return
             with self.lock:
                 if tickType == 32:
                     self.bid_exchange_codes = value
+                    self.bid_exchange_at = time.monotonic()
                 elif tickType == 33:
                     self.ask_exchange_codes = value
+                    self.ask_exchange_at = time.monotonic()
 
         def tickGeneric(self, reqId, tickType, value):
             if reqId == 601 and tickType == 49:
@@ -203,7 +225,13 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             with client.lock:
                 complete = (client.market_type is not None
                             and client.last_tick is not None
-                            and client.book_tick is not None)
+                            and client.book_tick is not None
+                            and client.stream_bid is not None
+                            and client.stream_ask is not None
+                            and client.bid_exchange_codes is not None
+                            and client.ask_exchange_codes is not None
+                            and bool(client.smart_components)
+                            and client.not_halted is not None)
             if complete or client.finished.is_set():
                 break
             time.sleep(0.2)
@@ -217,6 +245,22 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             bid_exchange_codes = client.bid_exchange_codes
             ask_exchange_codes = client.ask_exchange_codes
             smart_components = list(client.smart_components)
+            stream_bid, stream_ask = client.stream_bid, client.stream_ask
+            bid_at, ask_at = client.stream_bid_at, client.stream_ask_at
+            bid_exchange_at, ask_exchange_at = client.bid_exchange_at, client.ask_exchange_at
+            min_tick = client.min_tick
+        current_monotonic = time.monotonic()
+        def age(observed_at):
+            return None if observed_at is None else current_monotonic - observed_at
+        book_corroboration = verify_streaming_book(
+            stream_bid=stream_bid, stream_ask=stream_ask,
+            tick_bid=book.get("bid") if book else None,
+            tick_ask=book.get("ask") if book else None,
+            min_tick=min_tick, streaming_bid_age=age(bid_at),
+            streaming_ask_age=age(ask_at),
+            bid_venue_age=age(bid_exchange_at),
+            ask_venue_age=age(ask_exchange_at)
+        )
         venue_proof = verify_direct_primary_book(
             bid_exchange_codes, ask_exchange_codes, smart_components,
             expected_provider_exchange=exchange_code
@@ -233,6 +277,8 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             "subscription_confirmed": live_entitlement_confirmed,
             "provider_halt_status_observed": not_halted is not None,
             "venue_proof": venue_proof.reason,
+            "two_stream_book_corroboration": book_corroboration.reason,
+            "primary_book_prices_agree": book_corroboration.verified,
             "bid_and_ask_primary_venue_observed": venue_proof.verified,
             "bot_analytics_rights_confirmed": bot_rights_confirmed,
             "errors": sorted(set(client.errors)),
@@ -256,7 +302,9 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                     "direct_book_exchange": (venue_proof.bid_exchange
                                              if venue_proof.verified else None),
                     "exchange_mapping_verified": exchange_map_verified,
-                    "book_venue_proof_observed": venue_proof.verified,
+                    "book_venue_proof_observed": (
+                        venue_proof.verified and book_corroboration.verified
+                    ),
                     "market_phase": ("CONTINUOUS" if not_halted is True
                                      else "UNKNOWN_OR_HALTED"),
                 }
@@ -265,7 +313,13 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                 snapshot = build_ibkr_tws_snapshot(
                     {"conId": conid, "isin": isin, "symbol": symbol,
                      "listing_mic": "XSTO", "currency": "SEK"},
-                    trade, book, session, received_at=_iso(),
+                    trade, ({
+                        **book,
+                        "bid": (book_corroboration.primary_bid if book_corroboration.verified
+                                else book["bid"]),
+                        "ask": (book_corroboration.primary_ask if book_corroboration.verified
+                                else book["ask"])
+                    }), session, received_at=_iso(),
                     confirmed_exchange_map=mapping
                 )
                 gate = evaluate_primary_live_quote(
