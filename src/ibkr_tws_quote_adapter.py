@@ -42,6 +42,7 @@ def build_ibkr_tws_snapshot(contract, last_tick, book_tick, session, *,
     # An explicit, separately verified direct-book venue is required;
     # SMART does not prove venue XSTO.
     mapping_ok = (session.get("exchange_mapping_verified") is True
+                  and session.get("book_venue_proof_observed") is True
                   and isinstance(trade_exchange, str)
                   and isinstance(book_exchange, str)
                   and book_exchange.upper() != "SMART"
