@@ -1,0 +1,306 @@
+{
+  "schema_version": "1.0",
+  "as_of": "2026-10-22T14:35:00+02:00",
+  "date": "2026-10-22",
+  "scope": "SELECTED_STOCKS_ONLY",
+  "status": "RESEARCH_ONLY_INCOMPLETE_FINANCIAL_DUE_DILIGENCE",
+  "observed_evidence": "BROKER_90D_ISSUER_FAIR_VALUE_FI_SHORT_INTEREST",
+  "prices_used": "NO_CURRENT_XSTO_QUOTES",
+  "disclaimer": "Journalistic broker records are secondary reports. Broker price targets are not EPS revisions. Morningstar fair value is an independent DCF model and is never counted as a broker price target.",
+  "companies": [
+    {
+      "symbol": "EKTA B",
+      "isin": "SE0000163628",
+      "report_period": "Q1 FY2026/27",
+      "estimated_earnings_revision_before": null,
+      "estimated_earnings_revision_after": null,
+      "fi_short": {
+        "pct": 15.39,
+        "date": "2026-10-20T17:00:00+02:00",
+        "source": "https://fi.se/sv/vara-register/blankningsregistret/"
+      },
+      "broker_events": [
+        {
+          "symbol": "EKTA B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-09-01T12:00:00+02:00",
+          "issuer": "Barclays",
+          "old": 44.5,
+          "new": 45.5,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+        },
+        {
+          "symbol": "EKTA B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-08-28T12:00:00+02:00",
+          "issuer": "SB1 Markets",
+          "old": 59,
+          "new": 60,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+        },
+        {
+          "symbol": "EKTA B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-08-28T12:00:00+02:00",
+          "issuer": "Pareto Securities",
+          "old": 65,
+          "new": 68,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+        },
+        {
+          "symbol": "EKTA B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-08-19T12:00:00+02:00",
+          "issuer": "Nordea",
+          "old": 65,
+          "new": 63,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+        },
+        {
+          "symbol": "EKTA B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-08-18T12:00:00+02:00",
+          "issuer": "SEB",
+          "old": 58,
+          "new": 57,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+        },
+        {
+          "symbol": "EKTA B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-07-29T12:00:00+02:00",
+          "issuer": "Goldman Sachs",
+          "old": 55,
+          "new": 50,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/elekta/riktkurs"
+        },
+        {
+          "symbol": "EKTA B",
+          "mic": "XSTO",
+          "kind": "MODEL_FAIR_VALUE",
+          "as_of": "2026-09-18T12:00:00+02:00",
+          "issuer": "Morningstar",
+          "old": 100,
+          "new": 80,
+          "currency": "SEK",
+          "source": "https://global.morningstar.com/sv/aktier/stockholmsbrsen-r-vervrderad-bara-en-aktie-r-undervrderad"
+        }
+      ],
+      "notes": "Mixed broker revisions; Morningstar separately lowered its DCF fair-value estimate by 20%. High FI-reported short interest. EPS consensus change not established."
+    },
+    {
+      "symbol": "SKF B",
+      "isin": "SE0000108227",
+      "report_period": "Q3 FY2026",
+      "estimated_earnings_revision_before": null,
+      "estimated_earnings_revision_after": null,
+      "fi_short": {
+        "pct": 7.37,
+        "date": "2026-10-20T17:00:00+02:00",
+        "source": "https://fi.se/sv/vara-register/blankningsregistret/"
+      },
+      "broker_events": [
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-21T12:00:00+02:00",
+          "issuer": "ABG Sundal Collier",
+          "old": 270,
+          "new": 275,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-16T12:00:00+02:00",
+          "issuer": "SEB",
+          "old": 251,
+          "new": 285,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-15T12:00:00+02:00",
+          "issuer": "Handelsbanken",
+          "old": 290,
+          "new": 310,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-15T12:00:00+02:00",
+          "issuer": "DNB Carnegie",
+          "old": 290,
+          "new": 315,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-14T12:00:00+02:00",
+          "issuer": "Citigroup",
+          "old": 270,
+          "new": 280,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-14T12:00:00+02:00",
+          "issuer": "Nordea",
+          "old": 315,
+          "new": 325,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-13T12:00:00+02:00",
+          "issuer": "Goldman Sachs",
+          "old": 229,
+          "new": 226,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-07T12:00:00+02:00",
+          "issuer": "BNP Paribas",
+          "old": 265,
+          "new": 280,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-02T12:00:00+02:00",
+          "issuer": "Pareto Securities",
+          "old": 305,
+          "new": 315,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-09-29T12:00:00+02:00",
+          "issuer": "Deutsche Bank",
+          "old": 290,
+          "new": 300,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-09-21T12:00:00+02:00",
+          "issuer": "Barclays",
+          "old": 250,
+          "new": 260,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-09-18T12:00:00+02:00",
+          "issuer": "JP Morgan",
+          "old": 230,
+          "new": 245,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        },
+        {
+          "symbol": "SKF B",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-08-17T12:00:00+02:00",
+          "issuer": "RBC",
+          "old": 250,
+          "new": 270,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/skf/riktkurs"
+        }
+      ],
+      "notes": "Broker revisions predominantly up; earnings consensus change not verified, short interest is material."
+    },
+    {
+      "symbol": "ABB",
+      "isin": "CH0012221716",
+      "report_period": "Q3 FY2026",
+      "estimated_earnings_revision_before": null,
+      "estimated_earnings_revision_after": null,
+      "fi_short": null,
+      "broker_events": [
+        {
+          "symbol": "ABB",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-21T12:00:00+02:00",
+          "issuer": "ABG Sundal Collier",
+          "old": 1025,
+          "new": 1000,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/abb"
+        },
+        {
+          "symbol": "ABB",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-21T12:00:00+02:00",
+          "issuer": "Pareto Securities",
+          "old": 1150,
+          "new": 1100,
+          "currency": "SEK",
+          "source": "https://www.borskollen.se/aktie/abb"
+        },
+        {
+          "symbol": "ABB",
+          "mic": "XSTO",
+          "kind": "BROKER_TARGET",
+          "as_of": "2026-10-21T12:00:00+02:00",
+          "issuer": "Handelsbanken",
+          "old": 105,
+          "new": 94,
+          "currency": "USD",
+          "source": "https://www.borskollen.se/aktie/abb"
+        }
+      ],
+      "notes": "Three after-Q3 target cuts despite an ABG recommendation upgrade. Swedish FI short interest currently NOT verified; old reported values must not be treated as zero."
+    }
+  ]
+}
