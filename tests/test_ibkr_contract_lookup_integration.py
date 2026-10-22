@@ -98,11 +98,10 @@ def test_lookup_unavailable_gateway_report(monkeypatch):
     calls = modules(monkeypatch)
     # A fake failed login should not produce contract lookup success.
     # This validates the production path's own error classification.
-    import ibapi.client
     def fail(self, host, port, clientId):
         calls.append(("refused", host, port))
         self.connected = False
-    monkeypatch.setattr(ibapi.client.EClient, "connect", fail)
+    monkeypatch.setattr(sys.modules["ibapi.client"].EClient, "connect", fail)
     output = lookup_local(isin=ISIN)
     assert output["status"] == "LOCAL_GATEWAY_NOT_AVAILABLE"
     assert output["no_orders"] is True
