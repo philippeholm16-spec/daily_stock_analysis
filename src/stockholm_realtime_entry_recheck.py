@@ -45,6 +45,8 @@ def reprice_with_live_quote(analysis, quote_result, *, isin, symbol,
             or analysis.get("opportunity_grade") != "VERY_GOOD"
             or analysis.get("score", 0) < 85):
         return _unavailable("stock_analyst_not_very_good")
+    if (analysis.get("isin") != isin or analysis.get("symbol") != symbol):
+        return _unavailable("analysis_share_class_does_not_match_live_quote")
     if (not isinstance(quote_result, QuoteGateResult)
             or not quote_result.accepted_as_primary_live
             or not isinstance(quote_result.quote, dict)):
