@@ -69,6 +69,7 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             self.isin_confirmed = False
             self.errors = []
             self.subscription_started = False
+            self.not_halted = None
             self.finished = threading.Event()
             self.lock = threading.Lock()
 
@@ -113,6 +114,11 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                 with self.lock:
                     self.market_type = marketDataType
 
+        def tickGeneric(self, reqId, tickType, value):
+            if reqId == 601 and tickType == 49:
+                with self.lock:
+                    self.not_halted = (value == 0)
+
         def tickByTickAllLast(self, reqId, tickType, time_, price, size,
                               tickAttribLast, exchange, specialConditions):
             if reqId != 602:
@@ -139,7 +145,8 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                 self.errors.append("ibkr_error_code_" + str(errorCode))
 
     client = Reader()
-    if not client.connect("127.0.0.1", port, client_id):
+    client.connect("127.0.0.1", port, client_id)
+    if not client.isConnected():
         raise RuntimeError("ibkr_local_gateway_not_available")
     thread = threading.Thread(target=client.run, daemon=True)
     thread.start()
@@ -159,6 +166,7 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             book = client.book_tick
             matches = list(client.contract_matches)
             isin_confirmed = client.isin_confirmed
+            not_halted = client.not_halted
         info = {
             "provider": "IBKR_TWS_API",
             "requested_conid": conid,
@@ -169,6 +177,7 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             "upstream_isin_confirmed": isin_confirmed,
             "operator_exchange_map_confirmed": exchange_map_verified,
             "subscription_confirmed": live_entitlement_confirmed,
+            "provider_halt_status_observed": not_halted is not None,
             "bot_analytics_rights_confirmed": bot_rights_confirmed,
             "errors": sorted(set(client.errors)),
             "live_primary_quote_verified": False,
@@ -190,7 +199,8 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
                     "authenticated": True,
                     "direct_book_exchange": exchange_code,
                     "exchange_mapping_verified": exchange_map_verified,
-                    "market_phase": "CONTINUOUS",
+                    "market_phase": ("CONTINUOUS" if not_halted is True
+                                     else "UNKNOWN_OR_HALTED"),
                 }
                 mapping = ({exchange_code: "XSTO"} if exchange_map_verified
                            else {})
