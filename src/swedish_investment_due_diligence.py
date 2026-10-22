@@ -15,6 +15,22 @@ from src.swedish_revision_momentum import (
     earnings_consensus_revision, target_revision_momentum
 )
 
+# Intended V2 weights. A 100-point V2 score MUST NOT be displayed until
+# the required source-backed financial risk/evidence modules exist.
+# Earnings estimate revisions are deliberately weighted ABOVE broker
+# target revisions; neither a DCF value nor a BUY label is a revision.
+V2_WEIGHTS = {
+    "valuation_with_sensitivity": 15,
+    "operating_quality": 20,
+    "earnings_estimate_revisions": 20,
+    "broker_target_revision_breadth": 15,
+    "fi_short_interest_and_change": 10,
+    "balance_sheet_and_cashflow": 10,
+    "technical_entry_quality": 5,
+    "catalyst_and_event_risk": 5,
+}
+assert sum(V2_WEIGHTS.values()) == 100
+
 REQUIRED_RISK_MODULES = (
     "financial_statements_and_net_debt",
     "free_cashflow_and_adjustment_quality",
@@ -108,6 +124,8 @@ def evaluate_investment_readiness(company, *, now=None):
 
     return {
         "symbol": symbol, "mic": "XSTO",
+        "proposed_v2_factor_weights": V2_WEIGHTS.copy(),
+        "provisional_revision_observation_only": True,
         "broker_momentum": broker,
         "earnings_momentum": earnings,
         "short_interest": short,
