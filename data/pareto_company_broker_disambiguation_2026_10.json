@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-22",
+  "scope": "HISTORICAL_BROKER_SPECIFIC_REVISIONS_NO_CONSENSUS",
+  "studies": [
+    {
+      "company": "Elekta AB B",
+      "isin": "SE0000163628",
+      "mic": "XSTO",
+      "symbol": "EKTA B",
+      "issuer": "Pareto Securities",
+      "currency": "SEK",
+      "events": [
+        {
+          "isin": "SE0000163628",
+          "mic": "XSTO",
+          "symbol": "EKTA B",
+          "issuer": "Pareto Securities",
+          "currency": "SEK",
+          "kind": "BROKER_TARGET",
+          "old": 70,
+          "new": 65,
+          "at": "2026-05-29T00:00:00+02:00",
+          "source": "https://efn.se/elekta-far-sankt-rekommendation-se-dagens-rekar",
+          "publication_date_only": true
+        },
+        {
+          "isin": "SE0000163628",
+          "mic": "XSTO",
+          "symbol": "EKTA B",
+          "issuer": "Pareto Securities",
+          "currency": "SEK",
+          "kind": "BROKER_TARGET",
+          "old": 65,
+          "new": 68,
+          "at": "2026-08-28T00:00:00+02:00",
+          "source": "https://www.placera.se/nyheter/nagra-hojda-riktkurser-for-elekta-efter-rapporten-2026-08-28",
+          "publication_date_only": true
+        }
+      ],
+      "notes": "Latest Pareto Securities Elekta target +4.6%, but 180-day cumulative path 70 to 68 (-2.86%). No complete all-broker consensus."
+    },
+    {
+      "company": "Pareto Bank ASA",
+      "isin": "NO0010397581",
+      "mic": "XOSL",
+      "symbol": "PARB",
+      "issuer": "DNB Carnegie",
+      "currency": "NOK",
+      "events": [
+        {
+          "isin": "NO0010397581",
+          "mic": "XOSL",
+          "symbol": "PARB",
+          "issuer": "DNB Carnegie",
+          "currency": "NOK",
+          "kind": "BROKER_TARGET",
+          "old": 60,
+          "new": 50,
+          "at": "2026-10-13T00:00:00+02:00",
+          "source": "https://www.finansavisen.no/tdn/2026/10/13/06603393/pareto-bank-dnb-carnegie-nedjusterer-kursmal-til-50-60",
+          "publication_date_only": true
+        }
+      ],
+      "specific_broker_eps_revision_pct": {
+        "2026": -18,
+        "2027": -13
+      },
+      "specific_broker_eps_revision_source": "https://www.finansavisen.no/tdn/2026/10/13/06603393/pareto-bank-dnb-carnegie-nedjusterer-kursmal-til-50-60",
+      "eps_not_market_consensus": true,
+      "reason": "DNB Carnegie expects higher credit losses"
+    }
+  ],
+  "exclusions": [
+    "Morningstar Elekta fair value 100 to 80 kr: different measure, never included among 12-month broker targets.",
+    "Missing companywide EPS consensus estimate time-series: cannot state a marketwide forecast direction.",
+    "No Oslo or Stockholm live market data verified; no trade recommendations."
+  ]
+}
