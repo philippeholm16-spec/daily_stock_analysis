@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "company": "Elekta B",
+  "isin": "SE0000163628",
+  "review_date": "2026-10-22",
+  "review_scope": "DATED_PUBLIC_EXAMPLES_NON_EXHAUSTIVE",
+  "records": [
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": 12,
+      "kind": "price_target",
+      "house": "JP Morgan",
+      "previous": 52,
+      "current": 46.2,
+      "effective_at": "2026-08-28",
+      "source": "https://se.investing.com/equities/elekta-consensus-estimates"
+    },
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": 12,
+      "kind": "price_target",
+      "house": "Pareto Securities",
+      "previous": 65,
+      "current": 68,
+      "effective_at": "2026-08-28",
+      "source": "https://www.placera.se/nyheter/nagra-hojda-riktkurser-for-elekta-efter-rapporten-2026-08-28"
+    },
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": 12,
+      "kind": "price_target",
+      "house": "SB1 Markets",
+      "previous": 59,
+      "current": 60,
+      "effective_at": "2026-08-28",
+      "source": "https://www.placera.se/nyheter/nagra-hojda-riktkurser-for-elekta-efter-rapporten-2026-08-28"
+    },
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": 12,
+      "kind": "price_target",
+      "house": "Barclays",
+      "previous": 44.5,
+      "current": 45.5,
+      "effective_at": "2026-09-01",
+      "source": "https://se.marketscreener.com/kurs/aktie/ELEKTA-AB-6491415/konsensus/"
+    },
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": 12,
+      "kind": "price_target",
+      "house": "Nordea",
+      "previous": 65,
+      "current": 63,
+      "effective_at": "2026-08-19",
+      "source": "https://se.marketscreener.com/kurs/aktie/ELEKTA-AB-6491415/konsensus/"
+    },
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": 12,
+      "kind": "price_target",
+      "house": "SEB",
+      "previous": 58,
+      "current": 57,
+      "effective_at": "2026-08-18",
+      "source": "https://se.marketscreener.com/kurs/aktie/ELEKTA-AB-6491415/konsensus/"
+    },
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": 12,
+      "kind": "price_target",
+      "house": "Goldman Sachs",
+      "previous": 55,
+      "current": 50,
+      "effective_at": "2026-07-29",
+      "source": "https://se.marketscreener.com/kurs/aktie/ELEKTA-AB-6491415/konsensus/"
+    },
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": null,
+      "kind": "fair_value",
+      "house": "Morningstar / Alex Morozov",
+      "previous": 100,
+      "current": 80,
+      "effective_at": "2026-09-18",
+      "source": "https://global.morningstar.com/sv/aktier/stockholmsbrsen-r-vervrderad-bara-en-aktie-r-undervrderad"
+    }
+  ],
+  "short_interest": {
+    "pct": 15.39,
+    "as_of": "2026-10-20",
+    "source": "https://fi.se/en/our-registers/net-short-positions/"
+  },
+  "earnings_consensus_snapshots": null,
+  "notes": [
+    "Price targets from differing banks and Morningstar fair value cannot be pooled.",
+    "This does not prove the direction of aggregate EPS estimate momentum.",
+    "Some bank target data represent late July/August, not 22 October intraday.",
+    "No order, trading signal, or portfolio allocation permitted from these observations alone."
+  ]
+}
