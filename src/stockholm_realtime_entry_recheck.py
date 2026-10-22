@@ -49,8 +49,13 @@ def reprice_with_live_quote(analysis, quote_result, *, isin, symbol,
             or not quote_result.accepted_as_primary_live
             or not isinstance(quote_result.quote, dict)):
         return _unavailable("missing_verified_primary_realtime_quote")
-    if not 10000 <= capital_sek <= 25000:
+    if (isinstance(capital_sek, bool)
+            or not isinstance(capital_sek, (int, float))
+            or not isfinite(capital_sek) or not 10000 <= capital_sek <= 25000):
         return _unavailable("invalid_capital")
+    observed_turnover = analysis.get("observed_turnover_proxy_sek")
+    if (not _positive(observed_turnover) or observed_turnover < 5_000_000):
+        return _unavailable("missing_or_low_observed_liquidity")
     quote = quote_result.quote
     if quote.get("isin") != isin or quote.get("symbol") != symbol:
         return _unavailable("quote_identity_does_not_match_analysis")
@@ -78,7 +83,7 @@ def reprice_with_live_quote(analysis, quote_result, *, isin, symbol,
         outcome = evaluate(Candidate(
             isin=isin, mic="XSTO", symbol=symbol, currency="SEK",
             last_price=float(quote["last_price"]), entry=new_entry,
-            stop=stop, target=target, turnover_sek=5_000_000,
+            stop=stop, target=target, turnover_sek=observed_turnover,
             as_of=quote_stamp
         ), capital_sek=capital_sek, commission_sek_per_side=commission_sek_per_side,
             spread_sek_per_share=spread,
