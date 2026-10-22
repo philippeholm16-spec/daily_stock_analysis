@@ -136,3 +136,29 @@ broker login credentials in public Github files or expose gateway ports.
 
 No access, payment, user account or live prices have been verified or
 activated in this branch. `main` is unchanged.
+
+## Integration completed in the separate feature branch
+
+`src/stockholm_realtime_entry_recheck.py` combines an already accepted
+primary XSTO quote with an independently verified `VERY_GOOD` technical
+research setup. It **does not** simply copy the old entry price. It assumes
+a buy at the *current offer/ask*, recalculates risk and reward **after the
+current spread, commission and conservative slippage**, and rejects:
+
+- delayed/frozen/non-Nasdaq/XSTO or bad timestamp feeds;
+- OHLC reference bars older than 20 minutes or a live quote older than 60s;
+- a live ask that moved over 1% from the analysis entry;
+- a stop or observed resistance target invalidated by the new ask;
+- an expected upside below 3%, net R/R below 2.0 or risk >1% of capital.
+
+The output is `LIVE_QUOTE_REPRICED_FOR_HUMAN_RESEARCH`, not a buy order.
+Even this valid result is NOT a verified strategy win probability or
+entitlement to redistribute data in Telegram. It must remain behind the
+independent pre-alert review and explicit user data-license approval.
+
+**Operational next action is external to the code:** choose and activate an
+authorized primary Nasdaq Nordic Level-1 API stream in the user's own
+market-data account (or contract a licensed Nordic feed). No credentials,
+market-data subscription, real quote, payment or order has been activated
+by creating these files. CI uses fully synthetic signed-off provider event
+fixtures and cannot prove access to IBKR in production.
