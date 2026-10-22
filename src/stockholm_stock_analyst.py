@@ -225,6 +225,8 @@ def analyze_xsto_candidate(candidate, raw_chart, *, now=None,
     )
     return {
         "engine": "Stock Analyst Sweden / independent technical v1",
+        "isin": candidate["isin"],
+        "symbol": candidate["ticker"],
         "status": "ANALYZED_INDICATIVE_SETUP",
         "score": score, "quality": quality,
         "opportunity_grade": "VERY_GOOD" if very_good else "WATCH_ONLY",
