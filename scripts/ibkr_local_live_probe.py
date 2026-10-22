@@ -35,7 +35,7 @@ def _iso():
 
 
 def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
-                    client_id=77, duration_seconds=20,
+                    client_id=77, duration_seconds=50,
                     exchange_map_verified=False, bot_rights_confirmed=False,
                     live_entitlement_confirmed=False):
     """One exact contract only. External ibapi installed by the user."""
@@ -43,7 +43,7 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             or not isinstance(isin, str) or len(isin) != 12
             or not isinstance(symbol, str) or not symbol.strip()
             or not isinstance(exchange_code, str) or not exchange_code.isalnum()
-            or not 5 <= duration_seconds <= 45
+            or not 35 <= duration_seconds <= 90
             or port not in (7496, 7497, 4001, 4002)):
         raise ValueError("invalid_local_ibkr_probe_arguments")
     try:
@@ -70,6 +70,8 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             self.isin_confirmed = False
             self.errors = []
             self.subscription_started = False
+            self.book_subscription_started = False
+            self.trade_subscription_start = None
             self.not_halted = None
             self.smart_components = []
             self.smart_map_requested = False
@@ -112,7 +114,9 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
             self.reqMarketDataType(1)
             self.reqMktData(601, contract, "", False, False, [])
             self.reqTickByTickData(602, contract, "Last", 0, False)
-            self.reqTickByTickData(603, contract, "BidAsk", 0, False)
+            self.trade_subscription_start = time.monotonic()
+            # IBKR rate-limits requests for the same instrument within 15 s.
+            # The BidAsk request is started by the caller after >=16 sec.
 
         def marketDataType(self, reqId, marketDataType):
             if reqId == 601:
@@ -187,6 +191,11 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
     start = time.monotonic()
     try:
         while time.monotonic() - start < duration_seconds:
+            if (client.subscription_started and not client.book_subscription_started
+                    and client.trade_subscription_start is not None
+                    and time.monotonic() - client.trade_subscription_start >= 16):
+                client.reqTickByTickData(603, contract, "BidAsk", 0, False)
+                client.book_subscription_started = True
             with client.lock:
                 complete = (client.market_type is not None
                             and client.last_tick is not None
@@ -268,7 +277,7 @@ def run_local_probe(*, conid, isin, symbol, exchange_code, port=7497,
         if client.subscription_started:
             for ticker_id in (601,):
                 client.cancelMktData(ticker_id)
-            for ticker_id in (602, 603):
+            for ticker_id in ((602, 603) if client.book_subscription_started else (602,)):
                 client.cancelTickByTickData(ticker_id)
         client.disconnect()
         thread.join(timeout=2)
@@ -283,7 +292,7 @@ def main():
                         help="Exact IBKR primary venue code; do not guess")
     parser.add_argument("--port", type=int, default=7497)
     parser.add_argument("--client-id", type=int, default=77)
-    parser.add_argument("--duration", type=int, default=20)
+    parser.add_argument("--duration", type=int, default=50)
     parser.add_argument("--confirm-exchange-map", action="store_true",
                         help="Only when independently validated against IBKR primary venue")
     parser.add_argument("--confirm-bot-analytics-rights", action="store_true",
