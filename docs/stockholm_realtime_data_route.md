@@ -162,3 +162,60 @@ market-data account (or contract a licensed Nordic feed). No credentials,
 market-data subscription, real quote, payment or order has been activated
 by creating these files. CI uses fully synthetic signed-off provider event
 fixtures and cannot prove access to IBKR in production.
+
+## Improved exchange proof and Telegram preview, 2026-10-22
+
+The **book side venue is not present in IBKR's `tickByTickBidAsk`
+callback**. Our original proof based on only a directly requested stock
+exchange was insufficient. The new adapter
+`src/ibkr_exchange_provenance.py` requires actual provider
+`tickReqParams` -> `reqSmartComponents` mapping plus market-data
+`tickString` fields **32 (bidExch)** and **33 (askExch)**. Both sides must
+map unambiguously to the same explicitly confirmed Nasdaq Stockholm provider
+exchange; SMART, unknown, conflicting, consolidated and other venues are
+rejected. This is still a conservative provider-specific approximation:
+`reqMktData` BBO and `tickByTickBidAsk` are different streams and must
+be checked against each other before production use. The manual CLI
+`--exchange-code` **cannot alone prove where the quote came from**.
+
+IBKR also documents a **15-second same-instrument tick-by-tick pacing
+restriction**. The Mac probe therefore staggers Last and BidAsk stream
+requests by at least 16 seconds. The recommended diagnostic duration is
+50 seconds. The collector does not send orders or read an account's holdings.
+
+The final code stage
+`src/stockholm_live_alert.py` now accepts a strictly validated in-process
+primary-XSTO realtime `QuoteGateResult` and a separate
+`VERY_GOOD` Stock Analyst technical result. It reapplies the live ask
+to support/resistance, current spread, commission, slippage, net R/R and
+1% capital risk. Unknown liquidity is **rejected**, not replaced with an
+invented SEK 5 million turnover. Its output is a **Telegram-style
+dry-run preview only** with entry, stop, target, expected upside, reasoning
+and explicit no-order label. No automatic messaging or trading has been
+activated.
+
+Once a verified subscription is available, you can run the optional
+diagnostic with a *fresh* locally produced Stock Analyst result:
+
+```sh
+python -m scripts.ibkr_local_live_probe \
+  --conid VERIFIED_CONID \
+  --isin VERIFIED_ISIN \
+  --symbol 'VERIFIED_SYMBOL' \
+  --exchange-code VERIFIED_IBKR_NASDAQ_CODE \
+  --duration 50 \
+  --analysis-file analyst_result.json
+```
+
+This command defaults to **no approval**, no Telegram send and a disabled
+primary-live gate; it only reports readiness. After legitimately verifying
+rights, active L1 service, market-data contract and exchange map, the
+explicit confirmation flags can be added as explained above.
+
+Official callback references:
+- https://www.interactivebrokers.com/docs/tws-api/doc/md/component-exchanges
+- https://www.interactivebrokers.com/docs/tws-api/doc/md/streaming-data
+- https://www.interactivebrokers.com/docs/tws-api/doc/md/live-ticks
+
+Without an authorized market-data account, a genuine XSTO exchange identity
+mapping and sufficient fresh market data, the **live alert remains blocked**.
