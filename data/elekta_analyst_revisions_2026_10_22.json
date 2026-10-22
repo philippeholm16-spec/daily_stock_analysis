@@ -92,6 +92,17 @@
       "current": 80,
       "effective_at": "2026-09-18",
       "source": "https://global.morningstar.com/sv/aktier/stockholmsbrsen-r-vervrderad-bara-en-aktie-r-undervrderad"
+    },
+    {
+      "isin": "SE0000163628",
+      "currency": "SEK",
+      "horizon_months": 12,
+      "kind": "price_target",
+      "house": "Pareto Securities",
+      "previous": 70,
+      "current": 65,
+      "effective_at": "2026-05-29",
+      "source": "https://www.placera.se/telegram/elekta-sankt-rad-och-riktkurssankningar-efter-rapport-20260529"
     }
   ],
   "short_interest": {
@@ -104,6 +115,8 @@
     "Price targets from differing banks and Morningstar fair value cannot be pooled.",
     "This does not prove the direction of aggregate EPS estimate momentum.",
     "Some bank target data represent late July/August, not 22 October intraday.",
-    "No order, trading signal, or portfolio allocation permitted from these observations alone."
+    "No order, trading signal, or portfolio allocation permitted from these observations alone.",
+    "Pareto full May-Aug 2026 trajectory: 70 SEK -> 65 SEK (May 29) -> 68 SEK (Aug 28); net -2.86%. Latest +4.62% alone obscures prior cut.",
+    "No independently verified 2026 Carnegie Elekta price-target CUT found in accessible reports; do not attribute Pareto reports to DNB Carnegie."
   ]
 }
