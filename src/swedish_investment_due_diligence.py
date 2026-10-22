@@ -9,6 +9,7 @@ price have been verified. No trading/order/network capabilities.
 """
 from datetime import datetime, timezone
 from math import isfinite
+import re
 from urllib.parse import urlsplit
 
 from src.swedish_revision_momentum import (
@@ -85,12 +86,14 @@ def evaluate_investment_readiness(company, *, now=None):
     if (not isinstance(company, dict)
             or not isinstance(company.get("symbol"), str)
             or not company["symbol"].strip()
+            or not isinstance(company.get("isin"), str)
+            or re.fullmatch(r"[A-Z]{2}[A-Z0-9]{10}", company["isin"]) is None
             or not isinstance(company.get("broker_events"), list)):
         raise ValueError("invalid_investment_candidate")
     symbol = company["symbol"]
     broker = target_revision_momentum(
         company["broker_events"], symbol=symbol, now=now, lookback_days=90,
-        minimum_brokers=3
+        minimum_brokers=3, expected_isin=company["isin"]
     )
     earnings = earnings_consensus_revision(
         company.get("estimated_earnings_revision_before"),
