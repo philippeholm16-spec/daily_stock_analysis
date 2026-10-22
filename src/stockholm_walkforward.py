@@ -17,6 +17,7 @@ class ReplayTrade:
     stop: float
     target: float
     entry: float
+    proposed_entry: float
     quantity: int
     outcome: str
     exit_price: float
@@ -24,12 +25,15 @@ class ReplayTrade:
 
 
 def simulate_exit(analysis, future_bars, *, commission=1.0,
-                  spread=0.02, slippage_per_side=0.02):
+                  spread=0.02, slippage_per_side=0.02,
+                  capital_sek=None, max_entry_gap_pct=0.5):
     """Resolve actual first touch conservatively, including same-bar ambiguity.
 
-    A gap below stop assumes fill no better than next observed opening price.
-    A gap above target never assumes better than target. Stop/target same bar
-    counts as stop. Unresolved trades mark to market at last bar close.
+    Decisions are made on the prior close, then entry is attempted at NEXT
+    bar's opening price. Large opening gaps and cash/risk violations cancel
+    the entry (not fictitious fills). Later stop gaps fill at the observed
+    opening price. A gap above target never assumes better than target.
+    Same-bar stop and target count as stop. Time exits mark to market.
     """
     if not future_bars or analysis.get("status") != "ANALYZED_INDICATIVE_SETUP":
         raise ValueError("invalid_replay_input")
@@ -42,10 +46,30 @@ def simulate_exit(analysis, future_bars, *, commission=1.0,
             and isinstance(quantity, int) and quantity > 0):
         raise ValueError("invalid_replay_levels")
 
+    if not 0 <= max_entry_gap_pct <= 5:
+        raise ValueError("invalid_entry_gap_limit")
+    entry_fill = float(future_bars[0]["open"])
+    if (entry_fill <= stop or entry_fill >= target
+            or abs(entry_fill / entry - 1) * 100 > max_entry_gap_pct):
+        return {
+            "outcome": "ENTRY_NOT_FILLED",
+            "exit_price": None, "entry_fill_price": None,
+            "net_pnl_sek": None, "r_multiple": None,
+        }
+    cost = quantity * (spread + 2 * slippage_per_side) + 2 * commission
+    actual_risk = quantity * (entry_fill - stop) + cost
+    permitted_risk = (min(max_risk, capital_sek * 0.01) if capital_sek is None
+                      else capital_sek * 0.01)
+    if actual_risk <= 0 or actual_risk > permitted_risk + 1e-6:
+        return {
+            "outcome": "RISK_REJECTED_AT_ENTRY",
+            "exit_price": None, "entry_fill_price": None,
+            "net_pnl_sek": None, "r_multiple": None,
+        }
     outcome = "TIME_EXIT"
     exit_price = float(future_bars[-1]["close"])
     for bar in future_bars:
-        # Gap check precedes intrabar path. Favor conservative loss assumptions.
+        # Stop gaps after the first bar can lose >1 R despite planned sizing.
         if bar["open"] <= stop:
             outcome, exit_price = "STOP_GAP", float(bar["open"])
             break
@@ -58,13 +82,13 @@ def simulate_exit(analysis, future_bars, *, commission=1.0,
         if bar["high"] >= target:
             outcome, exit_price = "TARGET", target
             break
-    cost = quantity * (spread + 2 * slippage_per_side) + 2 * commission
-    pnl = quantity * (exit_price - entry) - cost
+    pnl = quantity * (exit_price - entry_fill) - cost
     return {
         "outcome": outcome,
         "exit_price": round(exit_price, 4),
+        "entry_fill_price": round(entry_fill, 4),
         "net_pnl_sek": round(pnl, 2),
-        "r_multiple": round(pnl / max_risk, 4),
+        "r_multiple": round(pnl / actual_risk, 4),
     }
 
 
@@ -122,6 +146,8 @@ def walk_forward_replay(bars, *, isin, ticker, capital_sek=15000,
                 or i and bar["at"] <= bars[i-1]["at"]):
             raise ValueError("unsorted_or_naive_replay_timestamps")
     results = []
+    skipped_entries = 0
+    very_good_opportunities = 0
     windows = 0
     evaluated = 0
     for end in range(lookback, len(bars) - horizon + 1, step):
@@ -136,15 +162,21 @@ def walk_forward_replay(bars, *, isin, ticker, capital_sek=15000,
             evaluated += 1
         if analysis.get("opportunity_grade") != "VERY_GOOD":
             continue
+        very_good_opportunities += 1
         closed = simulate_exit(
             analysis, bars[end:end+horizon], commission=commission,
-            spread=per_share_spread, slippage_per_side=slippage
+            spread=per_share_spread, slippage_per_side=slippage,
+            capital_sek=capital_sek
         )
+        if closed["entry_fill_price"] is None:
+            skipped_entries += 1
+            continue
         results.append(ReplayTrade(
             observed_at=bars[end-1]["at"].isoformat(),
             stop=analysis["lowest_sell_point"],
             target=analysis["sell_point"],
-            entry=analysis["entry_price"],
+            entry=closed["entry_fill_price"],
+            proposed_entry=analysis["entry_price"],
             quantity=analysis["quantity"],
             outcome=closed["outcome"],
             exit_price=closed["exit_price"],
@@ -163,8 +195,11 @@ def walk_forward_replay(bars, *, isin, ticker, capital_sek=15000,
         "ticker": ticker, "isin": isin,
         "historical_candles": len(bars),
         "windows": windows, "evaluated": evaluated,
-        "very_good_signals": len(results),
+        "very_good_signals": very_good_opportunities,
+        "filled_trades": len(results),
+        "skipped_entries": skipped_entries,
         "wins": winners, "losses": losers,
+        "win_rate_filled_trades": round(winners/len(results), 4) if results else None,
         "win_rate_all_trades": round(winners/len(results), 4) if results else None,
         "average_r": round(mean(t.r_multiple for t in results), 4)
                      if results else None,
