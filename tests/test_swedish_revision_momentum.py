@@ -48,7 +48,7 @@ def test_morningstar_fair_value_reduction_not_counted_as_broker_consensus():
     )
     assert x["observations"] == 6
     assert len(x["fair_value_model_revisions"]) == 1
-    assert x["fair_value_model_revisions"][0]["change_pct"] == -20
+    assert x["fair_value_model_revisions"][0]["change_pct"] == pytest.approx(-20)
     assert x["fair_value_is_not_a_broker_consensus_target"] is True
     assert x["earnings_estimate_revision"] == "NOT_CALCULATED_BY_TARGET_REVISIONS"
 
