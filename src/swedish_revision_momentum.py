@@ -37,10 +37,13 @@ def _source(source):
     return url.scheme == "https" and bool(url.netloc)
 
 
-def _check_event(event, *, symbol, now, lookback_days=90):
+def _check_event(event, *, symbol, now, lookback_days=90,
+                 expected_isin=None):
     if (not isinstance(event, dict)
             or event.get("symbol") != symbol or event.get("mic") != "XSTO"):
         raise ValueError("wrong_security_or_exchange_for_revision")
+    if expected_isin is not None and event.get("isin") != expected_isin:
+        raise ValueError("revision_isin_does_not_match_security")
     kind = event.get("kind")
     if kind not in ("BROKER_TARGET", "MODEL_FAIR_VALUE"):
         raise ValueError("unsupported_revision_kind")
@@ -59,6 +62,9 @@ def _check_event(event, *, symbol, now, lookback_days=90):
     currency = event.get("currency")
     if not isinstance(currency, str) or len(currency) != 3 or not currency.isalpha():
         raise ValueError("missing_target_currency")
+    if (event.get("old_currency") != currency
+            or event.get("new_currency") != currency):
+        raise ValueError("cross_currency_target_comparison_not_allowed")
     if kind == "BROKER_TARGET":
         # One firm gets one vote; never pretend a newsroom BUY rating means
         # the firm's price target increased.
@@ -73,7 +79,8 @@ def _check_event(event, *, symbol, now, lookback_days=90):
 
 
 def target_revision_momentum(events, *, symbol, now=None,
-                             lookback_days=90, minimum_brokers=3):
+                             lookback_days=90, minimum_brokers=3,
+                             expected_isin=None):
     """Track recent broker revision breadth, with fair-value model separate.
 
     Includes the most recent observable revision per broker only so frequent
@@ -88,10 +95,17 @@ def target_revision_momentum(events, *, symbol, now=None,
     broker = {}
     fair = {}
     for raw in events:
-        item = _check_event(raw, symbol=symbol, now=now, lookback_days=lookback_days)
+        item = _check_event(raw, symbol=symbol, now=now,
+                            lookback_days=lookback_days,
+                            expected_isin=expected_isin)
         dest = broker if item["kind"] == "BROKER_TARGET" else fair
         key = item["issuer"].casefold()
-        if key not in dest or dest[key]["as_of"] < item["as_of"]:
+        previous = dest.get(key)
+        if previous is not None and previous["as_of"] == item["as_of"]:
+            if (previous["old"], previous["new"], previous["currency"]) != (
+                    item["old"], item["new"], item["currency"]):
+                raise ValueError("conflicting_same_day_broker_or_model_revision")
+        if previous is None or previous["as_of"] < item["as_of"]:
             dest[key] = item
     revisions = sorted(broker.values(), key=lambda x: (x["as_of"], x["issuer"]))
     valuations = sorted(fair.values(), key=lambda x: (x["as_of"], x["issuer"]))
